@@ -1,7 +1,7 @@
 create database donasikuy;
 use donasikuy;
 
-create table users (
+create table users_donasikuy (
 id_user int primary key not null,
 nama varchar(128),
 email varchar(255),
@@ -14,7 +14,7 @@ jumlah_donasi double(15,2),
 jumlah_kampanye int
 );
 
-create table admins (
+create table admins_donasikuy (
 id_admin int primary key not null,
 nama_admin varchar(128) not null,
 email_admin varchar(255) not null,
