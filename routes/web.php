@@ -19,3 +19,12 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.at
 
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// profile
+Route::get('/profile', function () {
+    return view('profile');
+})->name('profile');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');

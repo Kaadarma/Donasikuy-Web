@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -25,7 +25,7 @@
             <div class="flex items-center gap-2">
                 <a href="{{ url('') }}" class="flex items-center gap-2">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo BantuYuk" class="h-8 w-auto">
-                    <span class="font-semibold text-emerald-800 text-sm sm:text-base">BantuYuk</span>
+                    <span class="font-semibold text-emerald-800 text-sm sm:text-base">Donasikuy</span>
                 </a>
             </div>
 
@@ -47,12 +47,54 @@
             </form>
 
             <nav class="flex items-center gap-3">
-                <a href="{{ route('login') }}" class="text-sm text-slate-600 hover:text-slate-900">Masuk</a>
-                <a href="/register"
-                    class="inline-flex items-center rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-4 py-2">
-                    Daftar
-                </a>
-                {{-- Bahasa --}}
+                {{-- Jika user belum login --}}
+                @guest
+                    <a href="{{ route('login') }}" class="text-sm text-slate-600 hover:text-slate-900">Masuk</a>
+                    <a href="{{ route('register') }}"
+                        class="inline-flex items-center rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-4 py-2">
+                        Daftar
+                    </a>
+                @endguest
+
+                {{-- Jika user sudah login --}}
+                @auth
+                    <div class="relative" x-data="{ open: false }">
+                        {{-- Tombol Profil --}}
+                        <button @click="open = !open" class="flex items-center gap-2 focus:outline-none">
+                            {{-- Gambar profil --}}
+                            <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('images/humans.jpg') }}"
+                                class="h-8 w-8 rounded-full object-cover border border-slate-200" alt="Profile">
+
+
+
+                            {{-- Panah bawah --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {{-- Dropdown --}}
+                        <div x-show="open" @click.away="open = false"
+                            class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-md py-2 z-50 transition-all">
+                            <a href="{{ route('profile') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Profil Saya</a>
+                            <a href="{{ route('dashboard') }}"
+                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Dashboard</a>
+
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-100 mt-2">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endauth
+
+
+                {{-- Tombol bahasa tetap ditampilkan --}}
                 <button
                     class="inline-flex items-center gap-2 text-sm border border-slate-200 rounded-md px-3 py-1.5 hover:bg-slate-50">
                     <span class="relative inline-flex h-4 w-4 overflow-hidden rounded-full ring-1 ring-slate-300">
@@ -68,6 +110,7 @@
                     </svg>
                 </button>
             </nav>
+
         </div>
     </header>
 
