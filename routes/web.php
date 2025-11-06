@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProgramController;
 
 
 // Halaman utama (landing page)
@@ -28,3 +29,7 @@ Route::get('/profile', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
+
+// program 
+Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
+Route::get('/program/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');
