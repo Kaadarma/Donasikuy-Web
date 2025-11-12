@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('title', $program['title'])
 
-{{-- Alpine untuk tab --}}
 @push('head')
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 @endpush
