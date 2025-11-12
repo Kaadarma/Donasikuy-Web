@@ -45,8 +45,6 @@
                         placeholder:text-slate-400 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" />
                 </div>
             </form>
-
-            <nav class="flex items-center gap-3">
                 {{-- Jika user belum login --}}
                 @guest
                     <a href="{{ route('login') }}" class="text-sm text-slate-600 hover:text-slate-900">Masuk</a>
