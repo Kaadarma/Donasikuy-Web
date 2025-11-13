@@ -35,5 +35,5 @@ Route::get('/dashboard', function () {
 Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
 Route::get('/program/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');
 
-Route::get('/inspirasi', [NewsController::class, 'inspirasi'])->name('inspirasi.index');
+Route::get('/inspirasi', [NewsController::class, 'index'])->name('inspirasi.index');
 Route::get('/inspirasi/{slug}', [NewsController::class, 'show'])->name('inspirasi.show');
