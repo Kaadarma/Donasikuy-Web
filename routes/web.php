@@ -5,6 +5,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\GalangDanaController;
 
 
 // Halaman utama (landing page)
@@ -35,5 +36,14 @@ Route::get('/dashboard', function () {
 Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
 Route::get('/program/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');
 
+// inspirasi / berita
 Route::get('/inspirasi', [NewsController::class, 'index'])->name('inspirasi.index');
 Route::get('/inspirasi/{slug}', [NewsController::class, 'show'])->name('inspirasi.show');
+
+// galang dana
+Route::get('/galangdana', [GalangDanaController::class, 'create'])
+    ->name('galang.create');
+
+// kategori galangan
+Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])
+    ->name('galang.kategori');

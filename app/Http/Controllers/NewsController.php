@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 class NewsController extends Controller
 {
-    public function index()
+    public function inspirasi()
     {
         $items = $this->seed();            // daftar artikel untuk halaman Inspirasi
         return view('inspirasi.index', compact('items'));

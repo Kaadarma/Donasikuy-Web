@@ -18,99 +18,89 @@
 
 <body class="antialiased text-slate-800 font-[Inter]">
 
-    {{-- HEADER --}}
-    <header
-        class="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b shadow-sm">
-        <div class="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2">
-                <a href="{{ url('') }}" class="flex items-center gap-2">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo BantuYuk" class="h-8 w-auto">
-                    <span class="font-semibold text-emerald-800 text-sm sm:text-base">Donasikuy</span>
-                </a>
+<header class="sticky top-0 z-50 bg-white border-b shadow-sm">
+    <div class="max-w-7xl mx-auto h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+
+        {{-- Logo kiri --}}
+        <a href="{{ url('/') }}" class="flex items-center gap-3">
+            <img src="{{ asset('images/logo.png') }}"
+                 class="h-20 w-20 object-contain" alt="Logo">
+            <span class="font-bold text-xl text-emerald-700">
+                DonasiKuy<span class="text-sm text-emerald-400">.com</span>
+            </span>
+        </a>
+
+        {{-- Search Bar Tengah --}}
+        <form class="hidden md:flex flex-1 mx-8">
+            <div class="relative w-full max-w-xl">
+                <input type="search"
+                       class="w-full h-12 border border-slate-300 rounded-xl pl-4 pr-10 text-sm outline-none
+                              focus:ring-2 focus:ring-emerald-500"
+                       placeholder="Cari Program">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="m21 21-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
+                    </svg>
+                </span>
             </div>
+        </form>
 
-            <form class="hidden md:flex items-center ml-auto w-auto max-w-sm">
-                <div class="relative">
-                    {{-- Icon search --}}
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m21 21-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
-                        </svg>
-                    </span>
-                    {{-- Input --}}
-                    <input type="search" placeholder="Cari Program"
-                        class="block w-64 rounded-md bg-slate-50 border border-slate-200 pl-9 pr-3 py-2 text-sm text-slate-700
-                        placeholder:text-slate-400 focus:bg-white outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" />
-                </div>
-            </form>
-                {{-- Jika user belum login --}}
-                @guest
-                    <a href="{{ route('login') }}" class="text-sm text-slate-600 hover:text-slate-900">Masuk</a>
-                    <a href="{{ route('register') }}"
-                        class="inline-flex items-center rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-sm px-4 py-2">
-                        Daftar
-                    </a>
-                @endguest
+        {{-- Menu kanan --}}
+        <nav class="flex items-center gap-6">
 
-                {{-- Jika user sudah login --}}
-                @auth
-                    <div class="relative" x-data="{ open: false }">
-                        {{-- Tombol Profil --}}
-                        <button @click="open = !open" class="flex items-center gap-2 focus:outline-none">
-                            {{-- Gambar profil --}}
-                            <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('images/humans.jpg') }}"
-                                class="h-8 w-8 rounded-full object-cover border border-slate-200" alt="Profile">
+            <a href="#" class="text-slate-700 font-medium hover:text-emerald-600">Donasi</a>
+            <a href="#" class="text-slate-700 font-medium hover:text-emerald-600">Event</a>
+            <a href="#" class="text-slate-700 font-medium hover:text-emerald-600">Punia</a>
 
+            @guest
+                <a href="{{ route('login') }}" class="text-slate-700 font-medium hover:text-emerald-600">
+                    Masuk
+                </a>
+            @endguest
 
-
-                            {{-- Panah bawah --}}
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        {{-- Dropdown --}}
-                        <div x-show="open" @click.away="open = false"
-                            class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-md py-2 z-50 transition-all">
-                            <a href="{{ route('profile') }}"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Profil Saya</a>
-                            <a href="{{ route('dashboard') }}"
-                                class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Dashboard</a>
-
-                            <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-100 mt-2">
-                                @csrf
-                                <button type="submit"
-                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                    Logout
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                @endauth
-
-
-                {{-- Tombol bahasa tetap ditampilkan --}}
-                <button
-                    class="inline-flex items-center gap-2 text-sm border border-slate-200 rounded-md px-3 py-1.5 hover:bg-slate-50">
-                    <span class="relative inline-flex h-4 w-4 overflow-hidden rounded-full ring-1 ring-slate-300">
-                        <span class="absolute inset-x-0 top-0 h-1/2 bg-red-600"></span>
-                        <span class="absolute inset-x-0 bottom-0 h-1/2 bg-white"></span>
-                    </span>
-                    ID
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-500" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                            clip-rule="evenodd" />
+            {{-- Jika login --}}
+            @auth
+            <div x-data="{ open:false }" class="relative">
+                <button @click="open = !open" class="flex items-center gap-2">
+                    <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('images/humans.jpg') }}"
+                         class="h-8 w-8 rounded-full border object-cover">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
-            </nav>
 
-        </div>
-    </header>
+                {{-- Dropdown --}}
+                <div x-show="open" @click.away="open=false"
+                     class="absolute right-0 mt-3 w-48 bg-white border rounded-xl shadow-lg overflow-hidden z-50">
+                    <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm hover:bg-slate-100">Profil Saya</a>
+                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm hover:bg-slate-100">Dashboard</a>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endauth
+
+            {{-- Tombol Galang Dana warna hijau --}}
+            <a href="{{ route('galang.create') }}"
+                class="hidden md:inline-flex items-center rounded-full bg-emerald-600 hover:bg-emerald-700 
+                    text-white text-sm font-semibold px-5 py-2.5 shadow-md shadow-emerald-500/30">
+            Galang Dana
+            </a>
+
+        </nav>
+    </div>
+</header>
+
 
     {{-- MAIN --}}
     <main>
