@@ -247,7 +247,7 @@
 
         {{-- CTA LIHAT PROGRAM --}}
         <div class="flex justify-center mt-10">
-            <a href="#" class="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-1">
+            <a href="{{ route('programs.index') }}" class="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-1">
                 Lihat Program Lainnya
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -297,16 +297,129 @@
 
         {{-- Tombol minimalis "Lihat Inspirasi Lainnya" --}}
         <div class="mt-8 flex justify-center">
-            <a href="#"
+            <a href="{{ route('inspirasi.index') }}"
                 class="inline-flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700 transition">
                 Lihat Inspirasi Lainnya
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </path>
                 </svg>
             </a>
         </div>
     </section>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        {{-- Header --}}
+        <div class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">FAQ</h1>
+            <p class="mt-3 text-slate-500 max-w-2xl mx-auto">
+                Temukan jawaban dari pertanyaan umum seputar Donasi, Cara Kerja Platform, dan Penggalangan Dana.
+            </p>
+        </div>
+
+        {{-- FAQ --}}
+        <div class="space-y-4" x-data="{ open: null }">
+
+            {{-- ITEM 1 --}}
+            <div class="border rounded-xl bg-white shadow-sm">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left"
+                    @click="open === 1 ? open = null : open = 1">
+                    <span class="font-semibold text-slate-800">Apa itu DonasiKuy?</span>
+                    <svg x-show="open !== 1" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <svg x-show="open === 1" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                </button>
+
+                <div x-show="open === 1" x-collapse class="px-5 pb-4 text-slate-600">
+                    DonasiKuy adalah platform galang dana online untuk membantu sesama melalui berbagai program sosial,
+                    kemanusiaan, pendidikan, kesehatan, dan kebutuhan darurat.
+                </div>
+            </div>
+
+            {{-- ITEM 2 --}}
+            <div class="border rounded-xl bg-white shadow-sm">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left"
+                    @click="open === 2 ? open = null : open = 2">
+                    <span class="font-semibold text-slate-800">Bagaimana cara berdonasi?</span>
+                    <svg x-show="open !== 2" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <svg x-show="open === 2" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                </button>
+
+                <div x-show="open === 2" x-collapse class="px-5 pb-4 text-slate-600">
+                    Anda hanya perlu memilih program yang ingin dibantu, klik tombol <b>Donasi Sekarang</b>,
+                    pilih nominal donasi, lalu lakukan pembayaran melalui metode yang tersedia.
+                </div>
+            </div>
+
+            {{-- ITEM 3 --}}
+            <div class="border rounded-xl bg-white shadow-sm">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left"
+                    @click="open === 3 ? open = null : open = 3">
+                    <span class="font-semibold text-slate-800">Bagaimana keamanan transaksi saya?</span>
+                    <svg x-show="open !== 3" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <svg x-show="open === 3" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                </button>
+
+                <div x-show="open === 3" x-collapse class="px-5 pb-4 text-slate-600">
+                    Transaksi di DonasiKuy aman karena menggunakan sistem pembayaran yang sudah tersertifikasi,
+                    dilengkapi enkripsi, dan terhubung langsung dengan penyedia pembayaran resmi.
+                </div>
+            </div>
+
+            {{-- ITEM 4 --}}
+            <div class="border rounded-xl bg-white shadow-sm">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left"
+                    @click="open === 4 ? open = null : open = 4">
+                    <span class="font-semibold text-slate-800">Bagaimana cara membuat galang dana?</span>
+                    <svg x-show="open !== 4" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <svg x-show="open === 4" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                </button>
+
+                <div x-show="open === 4" x-collapse class="px-5 pb-4 text-slate-600">
+                    Klik menu <b>Galang Dana</b>, pilih kategori galangan, isi detail cerita, target dana,
+                    dan unggah foto pendukung. Setelah diverifikasi, galangan dana Anda akan tayang.
+                </div>
+            </div>
+
+            {{-- ITEM 5 --}}
+            <div class="border rounded-xl bg-white shadow-sm">
+                <button class="w-full flex justify-between items-center px-5 py-4 text-left"
+                    @click="open === 5 ? open = null : open = 5">
+                    <span class="font-semibold text-slate-800">Kapan dana donasi dicairkan?</span>
+                    <svg x-show="open !== 5" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <svg x-show="open === 5" class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                </button>
+
+                <div x-show="open === 5" x-collapse class="px-5 pb-4 text-slate-600">
+                    Dana dapat dicairkan setelah Anda mengajukan pencairan dan proses verifikasi selesai.
+                    Biasanya membutuhkan waktu 1–3 hari kerja.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
 
     {{-- Section: Ajakan Donasi --}}
     <section class="relative mt-16 mb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -328,8 +441,5 @@
             </div>
         </div>
     </section>
-
-
-
 
 @endsection

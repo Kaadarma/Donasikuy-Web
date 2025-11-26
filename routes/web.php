@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\GalangDanaController;
+use App\Http\Controllers\DonasiController;
 
 
 // Halaman utama (landing page)
@@ -47,3 +48,11 @@ Route::get('/galangdana', [GalangDanaController::class, 'create'])
 // kategori galangan
 Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])
     ->name('galang.kategori');
+
+// donasi 
+Route::get('/nominal', [DonasiController::class, 'nominal'])->name('nominal');
+Route::get('/datadiri', [DonasiController::class, 'dataDiri'])->name('datadiri');
+Route::post('/donasi/proses', [DonasiController::class, 'prosesDonasi'])
+    ->name('donasi.proses');
+Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])
+    ->name('donasi.sukses');

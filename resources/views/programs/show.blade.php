@@ -92,7 +92,7 @@
                     </div>
 
                     {{-- KABAR TERBARU (dummy) --}}
-    
+
 
                     {{-- DONATUR (dummy) --}}
                     <div x-show="tab==='donatur'" x-transition class="mt-4">
@@ -124,67 +124,110 @@
 
             {{-- Kolom kanan: kartu donasi (overlap + sticky) --}}
             <div class="lg:sticky lg:top-20 mt-10">
-                <div class="rounded-xl border shadow-sm bg-white overflow-hidden">
+                <div class="rounded-2xl border border-slate-200 shadow-sm bg-white overflow-hidden">
                     <div class="p-4">
-                        <p class="text-xs font-semibold text-emerald-700 mb-1">{{ $program['category'] }}</p>
-                        <h3 class="text-[14px] font-semibold text-slate-900 leading-snug">
+                        {{-- Category --}}
+                        <p class="text-xs font-semibold text-emerald-700 mb-1">
+                            {{ $program['category'] }}
+                        </p>
+
+                        {{-- Title --}}
+                        <h3 class="text-[15px] font-semibold text-slate-900 leading-snug">
                             {{ $program['title'] }}
                         </h3>
 
+                        {{-- Sisa waktu --}}
                         <div class="mt-2 text-[12px] text-slate-600">
-                            Sisa Waktu : <span class="font-medium text-slate-800">{{ $program['days_left'] }} Hari
-                                Lagi</span>
+                            Sisa Waktu :
+                            <span class="font-medium text-slate-800">
+                                {{ $program['days_left'] }} Hari Lagi
+                            </span>
                         </div>
 
+                        {{-- Terkumpul / Target --}}
                         <div class="mt-3">
                             <div class="flex justify-between text-[12px] text-slate-600">
-                                <span>Terkumpul</span><span>Target</span>
+                                <span>Terkumpul</span>
+                                <span>Target</span>
                             </div>
                             <div class="flex justify-between text-[13px] font-semibold text-slate-900">
                                 <span>Rp {{ number_format($program['raised'], 0, ',', '.') }}</span>
                                 <span>Rp {{ number_format($program['target'], 0, ',', '.') }}</span>
                             </div>
 
-                            {{-- Progress + dot --}}
-                            <div class="relative mt-2 h-2 bg-slate-200 rounded-full">
-                                <div class="absolute left-0 top-0 h-2 bg-emerald-600 rounded-full"
-                                    style="width: {{ $progress }}%"></div>
-                                <span class="absolute -top-[3px] h-3 w-3 rounded-full bg-emerald-700"
-                                    style="left: calc({{ $progress }}% - 6px)"></span>
+                            {{-- Progress + tombol donasi dalam satu blok --}}
+                            <div class="mt-3 space-y-3">
+                                {{-- Progress bar dengan dot --}}
+                                <div class="relative h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                                    <div class="absolute left-0 top-0 h-2.5 bg-emerald-600 rounded-full"
+                                        style="width: {{ $progress }}%"></div>
+                                    <span class="absolute -top-[3px] h-3 w-3 rounded-full bg-emerald-700"
+                                        style="left: calc({{ $progress }}% - 6px)"></span>
+                                </div>
+
+                                {{-- (opsional) persentase kecil di bawah progress --}}
+                                <div class="text-[11px] text-slate-500 flex justify-between">
+                                    <span>{{ $progress }}% tercapai</span>
+                                    <span>Terima kasih para donatur 💚</span>
+                                </div>
+
+                                {{-- Tombol donasi – gradient hijau, ukuran pas --}}
+                                <a href="{{ route('nominal') }}"
+                                    class="w-full py-2.5 rounded-full text-[13px] font-semibold
+                              bg-gradient-to-r from-emerald-600 via-green-500 to-lime-400
+                              text-white shadow-md shadow-emerald-500/20
+                              hover:brightness-105 active:scale-[0.98] transition
+                              inline-flex items-center justify-center text-center">
+                                    DONASI SEKARANG
+                                </a>
                             </div>
                         </div>
-
-                        <a href="#"
-                            class="mt-4 inline-flex w-full items-center justify-center rounded-md bg-emerald-600 px-4 py-2.5 text-white text-sm font-medium hover:bg-emerald-700">
-                            DONASI SEKARANG
-                        </a>
                     </div>
 
                     {{-- Sebarkan Program --}}
-                    <div class="border-t p-4">
-                        <p class="text-sm text-slate-700 mb-2">Sebarkan Program</p>
-                        <div class="flex items-center gap-2">
+                    {{-- Sebarkan Program --}}
+                    <div class="border-t px-4 py-3.5 bg-slate-50/60">
+                        <p class="text-[13px] text-slate-700 mb-2 font-medium">Sebarkan Program</p>
+
+                        <div class="flex items-center gap-3">
+                            {{-- Facebook --}}
                             <a href="#"
-                                class="h-8 w-8 rounded-full border flex items-center justify-center text-slate-600 hover:text-emerald-600 hover:border-emerald-600">
-                                <i class="bi bi-whatsapp"></i>
-                            </a>
-                            <a href="#"
-                                class="h-8 w-8 rounded-full border flex items-center justify-center text-slate-600 hover:text-emerald-600 hover:border-emerald-600">
+                                class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center
+                  text-emerald-600 hover:bg-emerald-50 hover:shadow-sm
+                  transition-transform duration-150 hover:scale-105">
                                 <i class="bi bi-facebook"></i>
                             </a>
+
+                            {{-- WhatsApp --}}
                             <a href="#"
-                                class="h-8 w-8 rounded-full border flex items-center justify-center text-slate-600 hover:text-emerald-600 hover:border-emerald-600">
+                                class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center
+                  text-emerald-600 hover:bg-emerald-50 hover:shadow-sm
+                  transition-transform duration-150 hover:scale-105">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
+
+                            {{-- Twitter / X --}}
+                            <a href="#"
+                                class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center
+                  text-emerald-600 hover:bg-emerald-50 hover:shadow-sm
+                  transition-transform duration-150 hover:scale-105">
                                 <i class="bi bi-twitter-x"></i>
                             </a>
+
+                            {{-- Copy link --}}
                             <button type="button"
-                                class="h-8 w-8 rounded-full border flex items-center justify-center text-slate-600 hover:text-emerald-600 hover:border-emerald-600"
+                                class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center
+                       text-emerald-600 hover:bg-emerald-50 hover:shadow-sm
+                       transition-transform duration-150 hover:scale-105"
                                 onclick="navigator.clipboard.writeText(window.location.href)">
                                 <i class="bi bi-link-45deg"></i>
                             </button>
                         </div>
                     </div>
+
                 </div>
             </div>
+
             </aside>
 
         </div>

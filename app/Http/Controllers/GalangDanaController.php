@@ -9,7 +9,7 @@ class GalangDanaController extends Controller
     public function create()
     {
         return view('galang.create');
-    }
+         }
 
     // Step 2: Pilih Kategori Galang Dana
     public function kategori()
