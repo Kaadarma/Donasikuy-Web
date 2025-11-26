@@ -95,9 +95,6 @@
         </div>
     </div>
 
-
-    {{-- PROGRAM --}}
-
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
         <h2 class="text-center text-2xl md:text-3xl font-semibold mt-20">Program Pilihan Kami</h2>
         <div class="relative rounded-t-xl pt-12 pb-8 mt-12">
@@ -124,46 +121,44 @@
             </button>
 
             {{-- track kartu --}}
-            <div class="overflow-hidden">
-                <div id="progTrack" class="flex gap-6 px-8 scroll-smooth overflow-x-auto no-scrollbar">
-                    @foreach ($programs as $p)
-                        @php $percent = ($p['target'] ?? 0) ? min(100, round(($p['raised'] ?? 0) / $p['target'] * 100)) : 0; @endphp
+            <a href="{{ route('programs.show', $p['slug']) }}" class="shrink-0 block w-[320px]">
+                <article
+                    class="w-full bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg hover:-translate-y-1 transition cursor-pointer">
+                    <img src="{{ $p['image'] }}" class="w-full aspect-[16/9] object-cover">
 
-                        <article class="shrink-0 w-[320px] bg-white rounded-2xl overflow-hidden shadow">
-                            <img src="{{ $p['image'] }}" alt="" class="w-full aspect-[16/9] object-cover">
-                            <div class="p-5">
-                                <span class="text-xs text-emerald-700 font-medium">{{ $p['category'] ?? 'Program' }}</span>
-                                <h3 class="mt-1 font-semibold text-slate-800 leading-snug line-clamp-2 min-h-[3.25rem]">
-                                    {{ $p['title'] }}
-                                </h3>
+                    <div class="p-5">
+                        <span class="text-xs text-emerald-700 font-medium">{{ $p['category'] }}</span>
 
-                                <div class="mt-4 grid grid-cols-2 text-xs text-slate-500">
-                                    <div>
-                                        <div>Dana Terkumpul</div>
-                                        <div class="text-slate-900 font-medium">
-                                            Rp {{ number_format($p['raised'] ?? 0, 0, ',', '.') }}
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div>Sisa Waktu</div>
-                                        <div class="text-slate-900 font-medium">
-                                            {{ $p['days_left'] ?? '-' }} {{ isset($p['days_left']) ? 'Hari' : '' }}
-                                        </div>
-                                    </div>
-                                </div>
+                        <h3 class="mt-1 font-semibold text-slate-800 leading-snug line-clamp-2 min-h-[3.25rem]">
+                            {{ $p['title'] }}
+                        </h3>
 
-                                <div class="mt-3">
-                                    <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                                        <div class="h-1.5 bg-emerald-600 rounded-full"
-                                            style="width: {{ $percent }}%">
-                                        </div>
-                                    </div>
+                        <div class="mt-4 grid grid-cols-2 text-xs text-slate-500">
+                            <div>
+                                <div>Dana Terkumpul</div>
+                                <div class="text-slate-900 font-medium">
+                                    Rp {{ number_format($p['raised'], 0, ',', '.') }}
                                 </div>
                             </div>
-                        </article>
-                    @endforeach
-                </div>
-            </div>
+
+                            <div class="text-right">
+                                <div>Sisa Waktu</div>
+                                <div class="text-slate-900 font-medium">
+                                    {{ $p['days_left'] }} Hari
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                                <div class="h-1.5 bg-emerald-600 rounded-full" style="width: {{ $percent }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </a>
+
+
 
             {{-- dots indikator --}}
             <div id="progDots" class="mt-6 flex items-center justify-center gap-2">
@@ -247,7 +242,8 @@
 
         {{-- CTA LIHAT PROGRAM --}}
         <div class="flex justify-center mt-10">
-            <a href="{{ route('programs.index') }}" class="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-1">
+            <a href="{{ route('programs.index') }}"
+                class="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-1">
                 Lihat Program Lainnya
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">

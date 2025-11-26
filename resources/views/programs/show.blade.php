@@ -184,8 +184,7 @@
                         </div>
                     </div>
 
-                    {{-- Sebarkan Program --}}
-                    {{-- Sebarkan Program --}}
+              
                     <div class="border-t px-4 py-3.5 bg-slate-50/60">
                         <p class="text-[13px] text-slate-700 mb-2 font-medium">Sebarkan Program</p>
 

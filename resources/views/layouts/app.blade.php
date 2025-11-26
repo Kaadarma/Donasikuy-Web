@@ -139,7 +139,7 @@
                     </div>
                 @endauth
 
-                {{-- Tombol Galang Dana warna hijau --}}
+              
                 <a href="{{ route('galang.create') }}"
                     class="hidden md:inline-flex items-center rounded-full bg-emerald-600 hover:bg-emerald-700 
                     text-white text-sm font-semibold px-5 py-2.5 shadow-md shadow-emerald-500/30">
@@ -222,7 +222,6 @@
                     </ul>
                 </div>
 
-                {{-- Kolom 3: Pusat Bantuan --}}
                 <div>
                     <h4 class="font-semibold text-slate-900 mb-3">Pusat Bantuan</h4>
                     <ul class="space-y-2 text-slate-600">
@@ -232,7 +231,7 @@
                     </ul>
                 </div>
 
-                {{-- Kolom 4: Alamat --}}
+       
                 <div>
                     <h4 class="font-semibold text-slate-900 mb-3">Alamat</h4>
 

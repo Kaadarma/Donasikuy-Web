@@ -6,21 +6,19 @@ class ProgramController extends Controller
 {
     public function index()
     {
-        // kirim daftar program ke view list
-        $programs = array_values($this->seed()); // buang key numerik, jadikan array biasa
+
+        $programs = array_values($this->seed());
+
         return view('programs.index', compact('programs'));
     }
 
-    // Halaman detail: terima ID atau slug
     public function show($idOrSlug)
     {
         $all = $this->seed();
 
-        // Cari by ID
         $program = $all[$idOrSlug] ?? null;
 
-        // Jika tidak ketemu by ID, coba by slug
-        if (!$program) {
+        if (! $program) {
             foreach ($all as $p) {
                 if ($p['slug'] === $idOrSlug) {
                     $program = $p;
@@ -31,12 +29,11 @@ class ProgramController extends Controller
 
         abort_unless($program, 404);
 
-        // Kabar Terbaru (untuk halaman detail)
         $updates = [
             [
                 'title' => 'Update Bantuan Gempa Terkini',
-                'date'  => '6 November 2025',
-                'body'  => [
+                'date' => '6 November 2025',
+                'body' => [
                     'Tim relawan berhasil menyalurkan bantuan sembako kepada 120 keluarga terdampak.',
                     'Penggalangan dana masih dibuka untuk tahap kedua.',
                 ],
@@ -47,8 +44,8 @@ class ProgramController extends Controller
             ],
             [
                 'title' => 'Program Pendidikan Yatim Diperluas',
-                'date'  => '1 November 2025',
-                'body'  => [
+                'date' => '1 November 2025',
+                'body' => [
                     'Program bantuan beasiswa kini menjangkau 3 sekolah di Denpasar.',
                 ],
                 'images' => [],
@@ -63,38 +60,72 @@ class ProgramController extends Controller
     {
         return [
             1 => [
-                'id'        => 1,
-                'slug'      => 'sedekah-beras',
-                'category'  => 'Sedekah',
-                'title'     => 'Sedekah Beras',
-                'image'     => asset('images/bencana.jpg'),
-                'banner'    => asset('images/bencana.jpg'),
-                'raised'    => 0,
-                'target'    => 50_000_000,
+                'id' => 1,
+                'slug' => 'sedekah-beras',
+                'category' => 'Sedekah',
+                'title' => 'Sedekah Beras',
+                'image' => asset('images/bencana.jpg'),
+                'banner' => asset('images/bencana.jpg'),
+                'raised' => 0,
+                'target' => 50_000_000,
                 'days_left' => 64,
             ],
             2 => [
-                'id'        => 2,
-                'slug'      => 'bantu-bencana-gempa-dengan-kebutuhan-pokok',
-                'category'  => 'Kemanusiaan',
-                'title'     => 'Bantu Bencana Gempa dengan Kebutuhan Pokok',
-                'image'     => asset('images/p2.jpg'),
-                'banner'    => asset('images/p2.jpg'),
-                'raised'    => 500_000_124,
-                'target'    => 700_000_000,
+                'id' => 2,
+                'slug' => 'bantu-bencana-gempa-dengan-kebutuhan-pokok',
+                'category' => 'Kemanusiaan',
+                'title' => 'Bantu Bencana Gempa dengan Kebutuhan Pokok',
+                'image' => asset('images/bencana1.jpg'),
+                'banner' => asset('images/bencana1.jpg'),
+                'raised' => 500_000_124,
+                'target' => 700_000_000,
                 'days_left' => 2,
             ],
             3 => [
-                'id'        => 3,
-                'slug'      => 'bantuan-anak-yatim-dan-dhuafa',
-                'category'  => 'Pendidikan',
-                'title'     => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
-                'image'     => asset('images/p3.jpg'),
-                'banner'    => asset('images/p3.jpg'),
-                'raised'    => 235_366_942,
-                'target'    => 300_000_000,
+                'id' => 3,
+                'slug' => 'bantuan-anak-yatim-dan-dhuafa',
+                'category' => 'Pendidikan',
+                'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
+                'image' => asset('images/yatim1.jpg'),
+                'banner' => asset('images/yatim1.jpg'),
+                'raised' => 235_366_942,
+                'target' => 300_000_000,
                 'days_left' => 25,
             ],
+            4 => [
+                'id' => 4,
+                'slug' => 'bantuan-a',
+                'category' => 'Pendidikan',
+                'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
+                'image' => asset('images/yatim1.jpg'),
+                'banner' => asset('images/yatim1.jpg'),
+                'raised' => 235_366_942,
+                'target' => 300_000_000,
+                'days_left' => 25,
+            ],
+            [
+                'id' => 5,
+                'slug' => 'gempa-sumedang',
+                'category' => 'Bencana Alam',
+                'title' => 'Gempa Bumi di Sumedang – Rumah Warga Rusak Berat',
+                'image' => asset('images/gempa1.jpeg'),
+                'banner' => asset('images/gempa1.jpeg'),
+                'raised' => 32_000_000,
+                'target' => 250_000_000,
+                'days_left' => 18,
+            ],
+            [
+                'id' => 6,
+                'slug' => 'kekeringan-ntt',
+                'category' => 'Kemanusiaan',
+                'title' => 'Bantu Air Bersih untuk Warga Terdampak Kekeringan di NTT',
+                'image' => asset('images/airbersih.jpeg'),
+                'banner' => asset('images/airbersih.jpeg'),
+                'raised' => 15_900_000,
+                'target' => 120_000_000,
+                'days_left' => 40,
+            ],
+
         ];
     }
 }

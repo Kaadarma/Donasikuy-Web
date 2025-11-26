@@ -3,8 +3,8 @@
 @section('title', 'Daftar Program')
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-20">
-        <h1 class="text-2xl font-bold mb-6 text-emerald-800">Program Pilihan Kami</h1>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-5">
+        <h1 class="text-2xl font-bold mb-6 text-emerald-800 mb-35">Program Pilihan Kami</h1>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($programs as $p)

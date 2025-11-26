@@ -182,7 +182,6 @@
                         <input type="hidden" name="payment_method" id="paymentMethodInput">
                         <input type="hidden" name="voucher_code" id="voucherCodeInput">
 
-                        {{-- ... field Nama, Telepon, Email, dll ... --}}
 
                         <button type="button"
                             onclick="document.getElementById('confirmModal').classList.remove('hidden'); document.getElementById('confirmModal').classList.add('flex');"
