@@ -2,24 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;   // <-- WAJIB
+use App\Models\Program;        // <-- WAJIB
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Laravel\Socialite\Facades\Socialite;
+
+
 class ProgramController extends Controller
 {
     public function index()
     {
-        // kirim daftar program ke view list
-        $programs = array_values($this->seed()); // buang key numerik, jadikan array biasa
+        $programs = array_values($this->seed());
         return view('programs.index', compact('programs'));
     }
 
-    // Halaman detail: terima ID atau slug
     public function show($idOrSlug)
     {
         $all = $this->seed();
 
-        // Cari by ID
         $program = $all[$idOrSlug] ?? null;
 
-        // Jika tidak ketemu by ID, coba by slug
         if (!$program) {
             foreach ($all as $p) {
                 if ($p['slug'] === $idOrSlug) {
@@ -31,7 +34,6 @@ class ProgramController extends Controller
 
         abort_unless($program, 404);
 
-        // Kabar Terbaru (untuk halaman detail)
         $updates = [
             [
                 'title' => 'Update Bantuan Gempa Terkini',
@@ -58,7 +60,42 @@ class ProgramController extends Controller
         return view('programs.show', compact('program', 'updates'));
     }
 
-    // Dummy data program
+    public function search(Request $request)
+    {
+        $keyword = strtolower($request->q);
+
+        $all = $this->seed();
+
+        $filtered = array_filter($all, function ($p) use ($keyword) {
+            return str_contains(strtolower($p['title']), $keyword)
+                || str_contains(strtolower($p['category']), $keyword)
+                || str_contains(strtolower($p['slug']), $keyword);
+        });
+
+        $collection = collect($filtered);
+
+        $perPage = 9;
+        $page = request()->input('page', 1);
+
+        // penting → values() biar foreach tidak error key offset
+        $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
+        $programs = new LengthAwarePaginator(
+            $items,
+            $collection->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('programs.search_result', [
+            'programs' => $programs,
+            'keyword'  => $request->q
+        ]);
+    }
+
+
+
     private function seed(): array
     {
         return [

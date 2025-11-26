@@ -79,21 +79,22 @@
             </a>
 
             {{-- Search Bar Tengah --}}
-            <form class="hidden md:flex flex-1 mx-8">
+            <form action="{{ route('program.search') }}" method="GET" class="hidden md:flex flex-1 mx-8">
                 <div class="relative w-full max-w-xl">
-                    <input type="search"
+                    <input type="search" name="q"
                         class="w-full h-12 border border-slate-300 rounded-xl pl-4 pr-10 text-sm outline-none
-                              focus:ring-2 focus:ring-emerald-500"
-                        placeholder="Cari Program">
+                        focus:ring-2 focus:ring-emerald-500"
+                        placeholder="Cari Program" value="{{ request('q') }}">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="m21 21-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
                         </svg>
                     </span>
                 </div>
             </form>
+
 
             {{-- Menu kanan --}}
             <nav class="flex items-center gap-6">
