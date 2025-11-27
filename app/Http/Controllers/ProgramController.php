@@ -2,13 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;   // <-- WAJIB
+use App\Models\Program;        // <-- WAJIB
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Laravel\Socialite\Facades\Socialite;
+
+
 class ProgramController extends Controller
 {
     public function index()
     {
+<<<<<<< HEAD
 
         $programs = array_values($this->seed());
 
+=======
+        $programs = array_values($this->seed());
+>>>>>>> b2bf40039fce4ba28010b70afa64e718f54b720f
         return view('programs.index', compact('programs'));
     }
 
@@ -18,7 +29,11 @@ class ProgramController extends Controller
 
         $program = $all[$idOrSlug] ?? null;
 
+<<<<<<< HEAD
         if (! $program) {
+=======
+        if (!$program) {
+>>>>>>> b2bf40039fce4ba28010b70afa64e718f54b720f
             foreach ($all as $p) {
                 if ($p['slug'] === $idOrSlug) {
                     $program = $p;
@@ -55,7 +70,42 @@ class ProgramController extends Controller
         return view('programs.show', compact('program', 'updates'));
     }
 
-    // Dummy data program
+    public function search(Request $request)
+    {
+        $keyword = strtolower($request->q);
+
+        $all = $this->seed();
+
+        $filtered = array_filter($all, function ($p) use ($keyword) {
+            return str_contains(strtolower($p['title']), $keyword)
+                || str_contains(strtolower($p['category']), $keyword)
+                || str_contains(strtolower($p['slug']), $keyword);
+        });
+
+        $collection = collect($filtered);
+
+        $perPage = 9;
+        $page = request()->input('page', 1);
+
+        // penting → values() biar foreach tidak error key offset
+        $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
+        $programs = new LengthAwarePaginator(
+            $items,
+            $collection->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('programs.search_result', [
+            'programs' => $programs,
+            'keyword'  => $request->q
+        ]);
+    }
+
+
+
     private function seed(): array
     {
         return [

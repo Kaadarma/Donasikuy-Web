@@ -9,6 +9,7 @@ use App\Http\Controllers\GalangDanaController;
 use App\Http\Controllers\DonasiController;
 
 
+
 // Halaman utama (landing page)
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
@@ -41,6 +42,10 @@ Route::get('/program/{idOrSlug}', [ProgramController::class, 'show'])->name('pro
 Route::get('/inspirasi', [NewsController::class, 'index'])->name('inspirasi.index');
 Route::get('/inspirasi/{slug}', [NewsController::class, 'show'])->name('inspirasi.show');
 
+// Search
+Route::get('/search', [ProgramController::class, 'search'])->name('program.search');
+
+
 // galang dana
 Route::get('/galangdana', [GalangDanaController::class, 'create'])
     ->name('galang.create');
@@ -56,3 +61,9 @@ Route::post('/donasi/proses', [DonasiController::class, 'prosesDonasi'])
     ->name('donasi.proses');
 Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])
     ->name('donasi.sukses');
+    
+// login google
+Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])
+    ->name('google.redirect');
+
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
