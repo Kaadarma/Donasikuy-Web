@@ -47,8 +47,7 @@ Route::get('/search', [ProgramController::class, 'search'])->name('program.searc
 
 
 // galang dana
-Route::get('/galangdana', [GalangDanaController::class, 'create'])
-    ->name('galang.create');
+Route::get('/galangdana', [GalangDanaController::class, 'create'])->name('galang.create');
 
 // kategori galangan
 Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])
@@ -57,10 +56,8 @@ Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])
 // donasi 
 Route::get('/nominal', [DonasiController::class, 'nominal'])->name('nominal');
 Route::get('/datadiri', [DonasiController::class, 'dataDiri'])->name('datadiri');
-Route::post('/donasi/proses', [DonasiController::class, 'prosesDonasi'])
-    ->name('donasi.proses');
-Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])
-    ->name('donasi.sukses');
+Route::post('/donasi/proses', [DonasiController::class, 'prosesDonasi'])->name('donasi.proses');
+Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])->name('donasi.sukses');
     
 // login google
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])

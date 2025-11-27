@@ -2,24 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;   // <-- WAJIB
-use App\Models\Program;        // <-- WAJIB
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
-use Laravel\Socialite\Facades\Socialite;
-
 
 class ProgramController extends Controller
 {
     public function index()
     {
-<<<<<<< HEAD
-
         $programs = array_values($this->seed());
 
-=======
-        $programs = array_values($this->seed());
->>>>>>> b2bf40039fce4ba28010b70afa64e718f54b720f
         return view('programs.index', compact('programs'));
     }
 
@@ -27,21 +18,20 @@ class ProgramController extends Controller
     {
         $all = $this->seed();
 
+        // Coba ambil langsung dengan key numerik (id sebagai key array)
         $program = $all[$idOrSlug] ?? null;
 
-<<<<<<< HEAD
+        // Kalau belum ketemu, coba cari dengan slug (aman pakai isset)
         if (! $program) {
-=======
-        if (!$program) {
->>>>>>> b2bf40039fce4ba28010b70afa64e718f54b720f
             foreach ($all as $p) {
-                if ($p['slug'] === $idOrSlug) {
+                if (isset($p['slug']) && $p['slug'] === $idOrSlug) {
                     $program = $p;
                     break;
                 }
             }
         }
 
+        // Kalau tetap tidak ketemu, 404
         abort_unless($program, 404);
 
         $updates = [
@@ -72,14 +62,19 @@ class ProgramController extends Controller
 
     public function search(Request $request)
     {
-        $keyword = strtolower($request->q);
+        $keyword = strtolower($request->q ?? '');
 
         $all = $this->seed();
 
+        // Amankan akses slug/category/title pakai null coalesce
         $filtered = array_filter($all, function ($p) use ($keyword) {
-            return str_contains(strtolower($p['title']), $keyword)
-                || str_contains(strtolower($p['category']), $keyword)
-                || str_contains(strtolower($p['slug']), $keyword);
+            $title = strtolower($p['title'] ?? '');
+            $category = strtolower($p['category'] ?? '');
+            $slug = strtolower($p['slug'] ?? '');
+
+            return str_contains($title, $keyword)
+                || str_contains($category, $keyword)
+                || str_contains($slug, $keyword);
         });
 
         $collection = collect($filtered);
@@ -87,7 +82,7 @@ class ProgramController extends Controller
         $perPage = 9;
         $page = request()->input('page', 1);
 
-        // penting → values() biar foreach tidak error key offset
+        // values() supaya index-nya rapi 0..N
         $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
 
         $programs = new LengthAwarePaginator(
@@ -100,11 +95,9 @@ class ProgramController extends Controller
 
         return view('programs.search_result', [
             'programs' => $programs,
-            'keyword'  => $request->q
+            'keyword' => $request->q,
         ]);
     }
-
-
 
     private function seed(): array
     {
@@ -153,7 +146,7 @@ class ProgramController extends Controller
                 'target' => 300_000_000,
                 'days_left' => 25,
             ],
-            [
+            5 => [
                 'id' => 5,
                 'slug' => 'gempa-sumedang',
                 'category' => 'Bencana Alam',
@@ -164,7 +157,7 @@ class ProgramController extends Controller
                 'target' => 250_000_000,
                 'days_left' => 18,
             ],
-            [
+            6 => [
                 'id' => 6,
                 'slug' => 'kekeringan-ntt',
                 'category' => 'Kemanusiaan',
@@ -175,7 +168,6 @@ class ProgramController extends Controller
                 'target' => 120_000_000,
                 'days_left' => 40,
             ],
-
         ];
     }
 }
