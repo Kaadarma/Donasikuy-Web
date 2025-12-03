@@ -110,7 +110,7 @@
                     </div>
 
                     <!-- LOGIN GOOGLE -->
-                    <a href="#"
+                    <a href="{{ route('auth.google.redirect') }}"
                         class="w-full inline-flex items-center justify-center gap-2 border border-slate-300 hover:bg-slate-50 py-2.5 rounded-md text-sm text-slate-700 font-medium transition mt-5">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-4 w-4"
                             alt="Google Icon">
