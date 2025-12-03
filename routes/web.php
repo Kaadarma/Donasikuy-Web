@@ -97,18 +97,26 @@ Route::middleware('auth')->group(function () {
 });
 
 // kyc verification
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('kyc')->name('kyc.')->group(function () {
 
-    // halaman form kyc 3 step
-    Route::get('/kyc', [KycController::class, 'index'])->name('kyc.index');
+        // Bagian 1 - Informasi Dasar
+        Route::get('/step-1', [KycController::class, 'step1'])->name('step1');
+        Route::post('/step-1', [KycController::class, 'storeStep1'])->name('step1.store');
 
-    // submit step per step (AJAX atau normal)
-    Route::post('/kyc/step1', [KycController::class, 'step1'])->name('kyc.step1');
-    Route::post('/kyc/step2', [KycController::class, 'step2'])->name('kyc.step2');
-    Route::post('/kyc/step3', [KycController::class, 'step3'])->name('kyc.step3');
+        // Bagian 2
+        Route::get('/step-2', [KycController::class, 'step2'])->name('step2');
+        Route::post('/step-2', [KycController::class, 'storeStep2'])->name('step2.store');
 
-    // final submit
-    Route::post('/kyc/submit', [KycController::class, 'submit'])->name('kyc.submit');
+        // Bagian 3 - Identitas Pemegang Akun
+        Route::get('/step-3', [KycController::class, 'step3'])->name('step3');
+        Route::post('/step-3', [KycController::class, 'storeStep3'])->name('step3.store');
 
-    
+        // Bagian 4 - Informasi Pencairan Dana
+        Route::get('/step-4', [KycController::class, 'step4'])->name('step4');
+        Route::post('/step-4', [KycController::class, 'storeStep4'])->name('step4.store');
+
+        // Opsional: halaman selesai
+        Route::get('/completed', [KycController::class, 'completed'])->name('completed');
+    });
 });

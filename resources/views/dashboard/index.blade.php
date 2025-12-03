@@ -115,7 +115,7 @@
                     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                         <span class="font-semibold">Akun Anda belum diverifikasi (KYC).</span>
                         <span class="ml-1">Lengkapi dokumen verifikasi untuk mulai membuat galang dana.</span>
-                        <a href="{{ route('kyc.index') }}" class="font-semibold underline underline-offset-2 ml-1">
+                        <a href="{{ route('kyc.step1') }}" class="font-semibold underline underline-offset-2 ml-1">
                             Verifikasi di sini
                         </a>
                     </div>

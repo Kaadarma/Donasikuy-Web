@@ -1,0 +1,136 @@
+@extends('layouts.dashboard')
+
+@section('title', 'Verifikasi Akun - Bagian 3')
+
+@section('content')
+    <div class="min-h-screen bg-slate-50 py-10">
+        <div class="max-w-5xl mx-auto">
+
+            {{-- Progress bar --}}
+            <div class="mb-3 text-xs font-medium text-slate-600">
+                75%
+            </div>
+            <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden mb-6">
+                {{-- sesuaikan persentase --}}
+                <div class="h-full w-[75%] bg-gradient-to-r from-[#04A777] to-[#A4FF3C]"></div>
+            </div>
+
+            {{-- Card --}}
+            <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+
+                {{-- Header card --}}
+                <div class="px-10 pt-6 pb-4 text-center border-b border-slate-200">
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Bagian 3
+                    </h2>
+
+                    <div class="mt-2 inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-slate-500">
+                        <div class="h-px w-8 bg-slate-200"></div>
+                        <span>3. Identitas Pemegang Akun</span>
+                        <div class="h-px w-8 bg-slate-200"></div>
+                    </div>
+                </div>
+
+                <div class="px-10 py-8">
+                    @if ($errors->any())
+                        <div class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
+                    <form action="{{ route('kyc.step3.store') }}" method="POST" enctype="multipart/form-data"
+                        class="space-y-6">
+                        @csrf
+
+                        {{-- No HP & No KTP --}}
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                    No HP (Whatsapp) Pemegang Akun <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="holder_phone" value="{{ old('holder_phone') }}"
+                                    class="block w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm
+                                          text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                    placeholder="0812xxxxxxx">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                    No KTP Pemegang Akun <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="holder_ktp" value="{{ old('holder_ktp') }}"
+                                    class="block w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm
+                                          text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                    placeholder="16 digit NIK">
+                            </div>
+                        </div>
+
+                        {{-- Foto KTP --}}
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">
+                                Foto KTP Pemegang Akun <span class="text-red-500">*</span>
+                            </label>
+                            <input type="file" name="ktp_photo"
+                                class="block w-full text-sm text-slate-700 file:mr-4 file:py-2.5 file:px-4
+                                      file:rounded-lg file:border-0 file:text-sm file:font-medium
+                                      file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                            <p class="mt-1 text-xs text-slate-500">
+                                Maks. 1MB (.jpg/.jpeg/.png)
+                            </p>
+                        </div>
+
+                        {{-- Selfie KTP & Foto Profil --}}
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                    Foto Selfie dengan KTP <span class="text-red-500">*</span>
+                                </label>
+                                <input type="file" name="selfie_ktp"
+                                    class="block w-full text-sm text-slate-700 file:mr-4 file:py-2.5 file:px-4
+                                          file:rounded-lg file:border-0 file:text-sm file:font-medium
+                                          file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                <p class="mt-1 text-xs text-slate-500">
+                                    Maks. 1MB (.jpg/.jpeg/.png)
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                    Foto Profil Individu <span class="text-red-500">*</span>
+                                </label>
+                                <input type="file" name="profile_photo"
+                                    class="block w-full text-sm text-slate-700 file:mr-4 file:py-2.5 file:px-4
+                                          file:rounded-lg file:border-0 file:text-sm file:font-medium
+                                          file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                <p class="mt-1 text-xs text-slate-500">
+                                    Maks. 1MB (.jpg/.jpeg/.png) – Format 1:1
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Tombol --}}
+                        <div class="pt-4 border-t border-slate-200 space-y-3">
+                            <button type="submit"
+                                class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-full
+           text-sm font-semibold text-white
+           bg-gradient-to-r from-[#04A777] to-[#A4FF3C]
+           hover:opacity-90 transition
+           focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#04A777]">
+                                Lanjut
+                            </button>
+
+
+                            <a href="{{ route('kyc.step2') }}"
+                                class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg
+                                  border border-slate-300 bg-white text-sm font-medium text-slate-700
+                                  hover:bg-slate-50">
+                                Balik Bagian 2
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+@endsection
