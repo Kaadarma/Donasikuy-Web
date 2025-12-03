@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('kampanye_tables', function (Blueprint $table) {
             $table->id('id_kampanye');
-            $table->foreignId('id_user')->nullable()->constrained('users_donasikuy', 'id_user')->onDelete('set null');
-            $table->foreignId('id_kategori')->nullable()->constrained('kategori_kampanye', 'id_kategori')->onDelete('set null');
-            $table->foreignId('id_admin')->nullable()->constrained('admins_donasikuy', 'id_admin')->onDelete('set null');
+
+            // Kolom relasi, TANPA constraint dulu
+            $table->unsignedBigInteger('id_user')->nullable();
+            $table->unsignedBigInteger('id_kategori')->nullable();
+            $table->unsignedBigInteger('id_admin')->nullable();
+
             $table->string('judul_kampanye', 255)->nullable();
             $table->text('deskripsi')->nullable();
             $table->integer('jumlah_target')->nullable();
@@ -23,7 +26,8 @@ return new class extends Migration
             $table->date('tanggal_mulai')->nullable();
             $table->date('tanggal_selesai')->nullable();
             $table->enum('status_kampanye', ['open', 'closed'])->default('open');
-            $table->longBlob('gambar_kampanye')->nullable();
+            $table->longText('gambar_kampanye')->nullable();
+
             $table->timestamps();
         });
     }

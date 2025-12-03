@@ -13,12 +13,24 @@ return new class extends Migration
     {
         Schema::create('donasi_bulanan_tables', function (Blueprint $table) {
             $table->id('id_bulanan');
-            $table->foreignId('id_user')->constrained('users_donasikuy', 'id_user')->onDelete('cascade');
-            $table->foreignId('id_kampanye')->constrained('kampanye', 'id_kampanye')->onDelete('cascade');
+
+            // Relasi ke tabel users (default Laravel)
+            $table->foreignId('id_user')
+                ->nullable()
+                ->constrained('users', 'id')      // BUKAN users_donasikuy
+                ->cascadeOnDelete();
+
+            // Relasi ke tabel kampanye_tables
+            $table->foreignId('id_kampanye')
+                ->nullable()
+                ->constrained('kampanye_tables', 'id_kampanye')  // BUKAN kampanye
+                ->cascadeOnDelete();
+
             $table->double('jumlah', 15, 2)->default(0);
             $table->date('tanggal_mulai')->nullable();
             $table->string('pembayaran_selanjutnya', 255)->nullable();
             $table->string('status_bulanan', 255)->nullable();
+
             $table->timestamps();
         });
     }

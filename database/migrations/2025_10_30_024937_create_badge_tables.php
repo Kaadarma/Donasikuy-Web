@@ -16,7 +16,11 @@ return new class extends Migration
             $table->string('nama_badge', 64)->nullable();
             $table->text('deskripsi')->nullable();
             $table->double('jumlah_minimal', 15, 2)->nullable();
-            $table->longBlob('foto_icon')->nullable();
+
+            // 🔥 FIX: longBlob tidak tersedia, ganti jadi longText
+            // bisa dipakai untuk simpan base64 atau path
+            $table->longText('foto_icon')->nullable();
+
             $table->timestamps();
         });
     }
