@@ -8,6 +8,7 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\GalangDanaController;
 use App\Http\Controllers\DonasiController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\DashboardController;
 
 // =====================
 // HALAMAN UTAMA
@@ -87,3 +88,9 @@ Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])
 
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
     ->name('auth.google.callback');
+
+// dashboard
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard.index');
+});

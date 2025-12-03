@@ -126,7 +126,7 @@
                             class="absolute right-0 mt-3 w-48 bg-white border rounded-xl shadow-lg overflow-hidden z-50">
                             <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm hover:bg-slate-100">Profil
                                 Saya</a>
-                            <a href="{{ route('dashboard') }}"
+                            <a href="{{ route('dashboard.index') }}"
                                 class="block px-4 py-2 text-sm hover:bg-slate-100">Dashboard</a>
 
                             <form method="POST" action="{{ route('logout') }}">
