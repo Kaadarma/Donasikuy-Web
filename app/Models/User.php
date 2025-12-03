@@ -17,7 +17,7 @@ class User extends Authenticatable
     public $timestamps = true;
 
     protected $fillable = [
-        'name', 'level', 'email', 'password',
+        'name', 'level', 'email', 'password', 'google_id', 'email_verified_at', 'phone',
     ];
 
     protected $hidden = [

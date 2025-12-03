@@ -1,23 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lupa Password | DonasiKuy</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+@extends('layouts.app')
 
-<body class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+@section('authpage', true)
+
+@section('title', 'Lupa Password')
+
+@section('content')
+<div class="min-h-[calc(100vh-160px)] flex items-center justify-center bg-slate-50 px-4">
     <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border">
         <h2 class="text-2xl font-semibold text-center text-emerald-700 mb-6">
             Lupa Password?
         </h2>
-
-        @if (session('status'))
-            <div class="mb-4 p-3 bg-emerald-100 text-emerald-700 text-sm rounded-md">
-                {{ session('status') }}
-            </div>
-        @endif
 
         <form action="{{ route('password.email') }}" method="POST" class="space-y-4">
             @csrf
@@ -47,5 +39,5 @@
             </a>
         </p>
     </div>
-</body>
-</html>
+</div>
+@endsection

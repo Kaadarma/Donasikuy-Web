@@ -10,6 +10,7 @@ use App\Http\Controllers\DonasiController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KycController;
+use App\Http\Controllers\ProfileController;
 
 // =====================
 // HALAMAN UTAMA
@@ -37,9 +38,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // PROFIL & DASHBOARD
 // =====================
 
-Route::get('/profile', function () {
-    return view('profile');
-})->name('profile');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -119,4 +122,28 @@ Route::middleware(['auth'])->group(function () {
         // Opsional: halaman selesai
         Route::get('/completed', [KycController::class, 'completed'])->name('completed');
     });
+    
+});
+
+    // forgot password
+    // FORGOT PASSWORD
+    Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])
+        ->name('password.request');
+
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
+        ->name('password.email');
+
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])
+        ->name('password.reset');
+
+    Route::post('/reset-password', [AuthController::class, 'updatePassword'])
+    ->name('password.update');
+
+// verif galang dana    
+Route::middleware('auth')->group(function () {
+    Route::get('/galang-dana/create', [GalangDanaController::class, 'create'])->name('galang.create');
+    Route::get('/galang-dana/kategori', [GalangDanaController::class, 'kategori'])->name('galang.kategori');
+    
+    // kalau nanti ada POST untuk simpan galang dana:
+    // Route::post('/galang-dana', [GalangDanaController::class, 'store'])->name('galang.store');
 });

@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk | BantuYuk</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+@section('authpage', true)
 
-<body class="min-h-screen flex">
+@section('title', 'Login')
+
+@section('content')
+<div class="min-h-screen flex">
     <div class="hidden md:flex md:w-1/2 bg-cover bg-center"
         style="background-image: url('{{ asset('images/login.png') }}');">
         <div class="flex flex-col justify-center items-center w-full bg-black/50 text-white">
@@ -94,7 +91,7 @@
                                 class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
                             Ingat saya
                         </label>
-                        <a href="#" class="text-emerald-600 hover:text-emerald-700 font-medium mt-5">Lupa
+                        <a href="{{ route('password.request') }}" class="text-emerald-600 hover:text-emerald-700 font-medium mt-5">Lupa
                             Password?</a>
                     </div>
                     <button type="submit"
@@ -112,10 +109,10 @@
                     <!-- LOGIN GOOGLE -->
                     <a href="{{ route('auth.google.redirect') }}"
                         class="w-full inline-flex items-center justify-center gap-2 border border-slate-300 hover:bg-slate-50 py-2.5 rounded-md text-sm text-slate-700 font-medium transition mt-5">
-                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-4 w-4"
-                            alt="Google Icon">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-4 w-4" alt="Google Icon">
                         Masuk dengan Google
                     </a>
+
             </form>
 
             <p class="text-center text-sm text-slate-600 mt-6">
@@ -128,7 +125,9 @@
             </div>
         </div>
     </div>
+@endsection
 
+    @section('scripts')
     <script>
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('[data-pw="toggle"]');
@@ -144,6 +143,5 @@
             closeI?.classList.toggle('hidden', !show);
         });
     </script>
-</body>
+    @endsection     
 
-</html>
