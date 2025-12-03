@@ -9,6 +9,7 @@ use App\Http\Controllers\GalangDanaController;
 use App\Http\Controllers\DonasiController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KycController;
 
 // =====================
 // HALAMAN UTAMA
@@ -93,4 +94,21 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard.index');
+});
+
+// kyc verification
+Route::middleware('auth')->group(function () {
+
+    // halaman form kyc 3 step
+    Route::get('/kyc', [KycController::class, 'index'])->name('kyc.index');
+
+    // submit step per step (AJAX atau normal)
+    Route::post('/kyc/step1', [KycController::class, 'step1'])->name('kyc.step1');
+    Route::post('/kyc/step2', [KycController::class, 'step2'])->name('kyc.step2');
+    Route::post('/kyc/step3', [KycController::class, 'step3'])->name('kyc.step3');
+
+    // final submit
+    Route::post('/kyc/submit', [KycController::class, 'submit'])->name('kyc.submit');
+
+    
 });
