@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\ProgramController; // ← tambahin ini
+
 class LandingController extends Controller
 {
     public function index()
@@ -13,15 +15,12 @@ class LandingController extends Controller
             'total_program' => 6,
         ];
 
-        // List program untuk section "Program Pilihan Kami"
-        $programs = [
-            ['category' => 'Sedekah',     'title' => 'Sedekah Beras', 'image' => asset('images/bencana.jpg'),  'raised' => 0,         'target' => 50000000,  'days_left' => 64],
-            ['category' => 'Kemanusiaan', 'title' => 'Bantu Bencana Gempa dengan Kebutuhan Pokok', 'image' => asset('images/bencana1.jpg'), 'raised' => 500000124, 'target' => 700000000, 'days_left' => 2],
-            ['category' => 'Bencana',  'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa', 'image' => asset('images/bencana.jpg'),  'raised' => 235366942, 'target' => 300000000, 'days_left' => 25],
-            ['category' => 'Yatim Piatu',  'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa', 'image' => asset('images/bencana.jpg'),  'raised' => 235366942, 'target' => 300000000, 'days_left' => 25],
-            ['category' => 'Bencana',  'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa', 'image' => asset('images/bencana1.jpg'), 'raised' => 235366942, 'target' => 300000000, 'days_left' => 25],
-            ['category' => 'Pendidikan',  'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa', 'image' => asset('images/bencana.jpg'),  'raised' => 235366942, 'target' => 300000000, 'days_left' => 25],
-        ];
+        // 🔥 GANTI DI SINI:
+        // Dulu: $programs = [ ... array manual ... ];
+        // Sekarang: ambil dari ProgramController supaya ada id & slug
+        $programs = app(ProgramController::class)->allPrograms();
+        // Kalau mau batasi misalnya cuma 6:
+        // $programs = array_slice(app(ProgramController::class)->allPrograms(), 0, 6);
 
         // Banner/hero slider
         $banners = [
@@ -32,7 +31,7 @@ class LandingController extends Controller
             ],
         ];
 
-        // Inspirasi (posts) — PASTIKAN didefinisikan SEBELUM return
+        // Inspirasi (posts)
         $posts = [
             ['title' => 'The More Important the Work, the More Important the Rest', 'image' => asset('images/bencana.jpg'), 'date' => '28 Juli 2021', 'url' => '#'],
             ['title' => 'Maecenas dapibus augue eu magna placerat, eget volutpat urna aliquam.', 'image' => asset('images/bencana1.jpg'), 'date' => '5 Juli 2021', 'url' => '#'],
@@ -42,7 +41,6 @@ class LandingController extends Controller
             ['title' => 'Kisah Relawan di Tengah Bencana Alam', 'image' => asset('images/bencana.jpg'), 'date' => '25 September 2021', 'url' => '#'],
         ];
 
-        // KIRIM SEMUA ke view
         return view('landing', compact('stats', 'programs', 'banners', 'posts'));
     }
 }
