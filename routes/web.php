@@ -47,7 +47,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->name('dashboard');
+})->name('dashboard.index');
 
 
 // =====================
@@ -141,7 +141,7 @@ Route::middleware(['auth'])->group(function () {
     ->name('password.update');
 
 // verif galang dana    
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'kyc.verified'])->group(function () {
     Route::get('/galang-dana/create', [GalangDanaController::class, 'create'])->name('galang.create');
     Route::get('/galang-dana/kategori', [GalangDanaController::class, 'kategori'])->name('galang.kategori');
     
@@ -151,3 +151,9 @@ Route::middleware('auth')->group(function () {
 
 // dana punia
 Route::get('/dana-punia', [DanaPuniaController::class, 'index'])->name('dana-punia.index');
+
+//auth galang-dana
+Route::middleware('auth')->get('/kyc-required', function () {
+    $kyc = \App\Models\KycSubmission::where('user_id', auth()->id())->first();
+    return view('kyc.required', compact('kyc'));
+})->name('kyc.required');

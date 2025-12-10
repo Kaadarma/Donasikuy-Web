@@ -36,4 +36,10 @@ class User extends Authenticatable
             ? Hash::make($value)
             : $value;
     }
+
+    public function kycSubmission()
+    {
+    return $this->hasOne(\App\Models\KycSubmission::class);
+    }
 }
+

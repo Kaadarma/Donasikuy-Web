@@ -66,24 +66,50 @@
                     </h1>
                 </div>
 
-                <div class="flex items-center gap-4">
-                    <button
-                        class="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 text-slate-500">
-                        <i class="bi bi-bell"></i>
-                    </button>
-                    <div class="flex items-center gap-3">
-                        <div class="hidden sm:flex flex-col items-end">
+                {{-- - drop --}}
+                {{-- USER DROPDOWN --}}
+                <div x-data="{ open: false }" class="relative">
+
+                    {{-- Trigger --}}
+                    <button 
+                        @click="open = !open"
+                        class="flex items-center gap-3 focus:outline-none"
+                    >
+                        <div class="hidden sm:flex flex-col items-end text-right">
                             <span class="text-sm font-medium text-slate-800">
-                                {{ auth()->user()->name ?? 'Nama User' }}
+                                {{ auth()->user()->name }}
                             </span>
                             <span class="text-xs text-slate-500">
-                                {{ auth()->user()->email ?? 'user@example.com' }}
+                                {{ auth()->user()->email }}
                             </span>
                         </div>
+
                         <div
-                            class="h-9 w-9 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white text-sm font-semibold">
-                            {{ strtoupper(substr(auth()->user()->name ?? 'DK', 0, 1)) }}
+                            class="h-9 w-9 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 
+                            flex items-center justify-center text-white text-sm font-semibold shadow">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </div>
+                    </button>
+
+                    {{-- DROPDOWN MENU --}}
+                    <div 
+                        x-show="open"
+                        @click.away="open = false"
+                        x-transition
+                        class="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg border border-slate-200 py-2 z-50"
+                    >
+                        <a href="{{ route('profile') }}"
+                            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                            Profil Saya
+                        </a>
+
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button
+                                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
             </header>
@@ -111,7 +137,8 @@
                 </div>
 
                 {{-- BANNER KYC --}}
-                @if (!($isKycVerified ?? false))
+                @if (!$hasSubmittedKyc)
+                    {{-- Belum pernah ajukan KYC --}}
                     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                         <span class="font-semibold">Akun Anda belum diverifikasi (KYC).</span>
                         <span class="ml-1">Lengkapi dokumen verifikasi untuk mulai membuat galang dana.</span>
@@ -119,8 +146,34 @@
                             Verifikasi di sini
                         </a>
                     </div>
-                @endif
 
+                @elseif ($kycStatus === 'pending')
+                    {{-- Sudah ajukan, sedang diproses --}}
+                    <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+                        <span class="font-semibold">Pengajuan KYC Anda sedang diproses.</span>
+                        <span class="ml-1">Tim kami sedang meninjau dokumen yang Anda kirimkan.</span>
+                    </div>
+
+                @elseif ($kycStatus === 'approved')
+                    {{-- Sudah diverifikasi --}}
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        <span class="font-semibold">Akun Anda sudah terverifikasi 🎉</span>
+                        <span class="ml-1">Anda dapat membuat galang dana dan mengajukan pencairan dana.</span>
+                    </div>
+
+                @elseif ($kycStatus === 'rejected')
+                    {{-- Ditolak --}}
+                    <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                        <span class="font-semibold">Pengajuan KYC Anda ditolak.</span>
+                        @if ($kycNote)
+                            <span class="ml-1">Alasan: {{ $kycNote }}</span>
+                        @endif
+                        <span class="ml-1">Silakan perbaiki data dan ajukan ulang.</span>
+                        <a href="{{ route('kyc.step1') }}" class="font-semibold underline underline-offset-2 ml-1">
+                            Ajukan ulang KYC
+                        </a>
+                    </div>
+                @endif
                 {{-- KARTU RINGKASAN --}}
                 <div class="grid gap-4 lg:grid-cols-3">
                     {{-- Total Donasi --}}

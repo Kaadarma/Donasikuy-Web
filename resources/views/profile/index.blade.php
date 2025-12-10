@@ -10,7 +10,7 @@
     </h1>
 
     {{-- Kartu profil hijau --}}
-    <section class="bg-emerald-800 text-white rounded-3xl p-6 md:p-8 shadow-lg mb-8">
+    <section class="bg-emerald-600 text-white rounded-3xl p-6 md:p-8 shadow-lg mb-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
             {{-- Kiri: avatar + nama + kontak --}}
@@ -22,7 +22,6 @@
                         class="h-full w-full object-cover">
                 </div>
                 <div>
-                    <p class="text-sm text-emerald-200 mb-0.5">Donatur</p>
                     <h2 class="text-lg font-semibold leading-tight">
                         {{ $user->name }}
                     </h2>

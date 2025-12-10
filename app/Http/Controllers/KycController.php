@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 // ganti dengan model KYC punyamu
-use App\Models\KycProfile;
+use App\Models\KycSubmission;
 
 class KycController extends Controller
 {
@@ -89,20 +89,32 @@ class KycController extends Controller
     {
         $validated = $request->validate([
             'holder_phone'   => 'required|string|max:20',
-            'holder_ktp'     => 'required|string|max:30',
+            'holder_ktp'     => 'required|string|max:20',
+            'holder_name'    => 'required|string|max:255',
             'ktp_photo'      => 'required|image|max:1024',      // 1MB
             'selfie_ktp'     => 'required|image|max:1024',
             'profile_photo'  => 'required|image|max:1024',
         ]);
 
         // handle upload file
+        // ====== MAPPING KE KOLOM DI TABEL kyc_submissions ======
+        // nama lengkap (wajib) -> full_name
+        $validated['full_name'] = $validated['holder_name'];
+
+        // NIK di DB -> ambil dari holder_ktp
+        $validated['nik'] = $validated['holder_ktp'];
+
+        // phone di DB -> ambil dari holder_phone
+        $validated['phone'] = $validated['holder_phone'];
+
+        // ====== SIMPAN FILE KE STORAGE & KOLOM PATH ======
         if ($request->hasFile('ktp_photo')) {
-            $validated['ktp_photo_path'] = $request->file('ktp_photo')
+            $validated['id_card_path'] = $request->file('ktp_photo')
                 ->store('kyc/ktp', 'public');
         }
 
         if ($request->hasFile('selfie_ktp')) {
-            $validated['selfie_ktp_path'] = $request->file('selfie_ktp')
+            $validated['selfie_path'] = $request->file('selfie_ktp')
                 ->store('kyc/selfie', 'public');
         }
 
@@ -111,13 +123,20 @@ class KycController extends Controller
                 ->store('kyc/profile', 'public');
         }
 
-        // kita gak simpan file object, cuma path-nya
-        unset($validated['ktp_photo'], $validated['selfie_ktp'], $validated['profile_photo']);
+        // buang field yang bukan kolom DB
+            unset(
+                $validated['ktp_photo'],
+                $validated['selfie_ktp'],
+                $validated['profile_photo'],
+                $validated['holder_name'],
+                $validated['holder_ktp'],
+                $validated['holder_phone']
+            );
 
-        $this->putSessionData($validated);
+            $this->putSessionData($validated);
 
-        return redirect()->route('kyc.step4');
-    }
+            return redirect()->route('kyc.step4');
+        }
 
     /* =======================
      * BAGIAN 4 - INFO PENCAIRAN DANA
@@ -154,7 +173,7 @@ class KycController extends Controller
 
         // === SIMPAN KE DATABASE ===
         // ganti KycProfile dengan model dan kolom punyamu
-        KycProfile::updateOrCreate(
+        KycSubmission::updateOrCreate(
             ['user_id' => Auth::id()],
             $allData
         );

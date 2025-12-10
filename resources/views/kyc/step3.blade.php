@@ -65,6 +65,16 @@
                             </div>
                         </div>
 
+                        {{-- Nama lengkap sesuai KTP --}}
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">
+                                Nama Lengkap (sesuai KTP) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="holder_name" value="{{ $kyc['holder_name'] ?? old('holder_name') }}"
+                                class="block w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm
+                                        text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        </div>
+
                         {{-- Foto KTP --}}
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">

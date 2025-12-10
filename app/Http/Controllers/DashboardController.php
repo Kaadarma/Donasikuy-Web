@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Donasi; // pastikan file Donasi.php ada di app/Models
+use App\Models\KycSubmission;
+
 
 class DashboardController extends Controller
 {
@@ -56,6 +58,24 @@ class DashboardController extends Controller
             ->values()
             ->all();
 
+         // =========================
+        // 3. STATUS KYC DARI TABEL kyc_submissions
+        // =========================
+        // cari pengajuan KYC milik user ini (jika ada)
+        $kyc = KycSubmission::where('user_id', $user->id)->first();
+
+        // apakah user sudah pernah submit KYC?
+        $hasSubmittedKyc = (bool) $kyc;
+
+        // status KYC: null | pending | approved | rejected
+        $kycStatus = $kyc->status ?? null;
+
+        // buat convenience flag: apakah sudah diverifikasi?
+        $isKycVerified = $kycStatus === 'approved';
+
+        // kalau kamu mau pakai catatan penolakan admin
+        $kycNote = $kyc->note ?? null;
+
         // =========================
         // 4. KIRIM KE VIEW
         // =========================
@@ -63,8 +83,13 @@ class DashboardController extends Controller
             'totalDonasi'     => $totalDonasi,
             'totalCampaign'   => $totalCampaign,
             'totalPencairan'  => $totalPencairan,
-            'isKycVerified'   => $isKycVerified,
             'weeklyDonations' => $weeklyDonations,
+
+            // KYC
+            'isKycVerified'   => $isKycVerified,
+            'hasSubmittedKyc' => $hasSubmittedKyc,
+            'kycStatus'       => $kycStatus,
+            'kycNote'         => $kycNote,
         ]);
     }
 }
