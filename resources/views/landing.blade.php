@@ -125,49 +125,87 @@
                 <div id="progTrack" class="flex gap-6 px-8 scroll-smooth overflow-x-auto no-scrollbar">
                     @foreach ($programs as $p)
                         @php
-                            $percent =
-                                $p['target'] ?? 0 ? min(100, round((($p['raised'] ?? 0) / $p['target']) * 100)) : 0;
+                            $raised = $p['raised'] ?? 0;
+                            $target = $p['target'] ?? 0;
+                            $percent = $target > 0 ? min(100, round(($raised / $target) * 100)) : 0;
+
+                            $slugOrId = $p['slug'] ?? ($p['id'] ?? null);
                         @endphp
 
-                        <a href="{{ route('programs.index') }}" class="shrink-0 block w-[320px]">
+                        <a href="{{ $slugOrId ? route('programs.show', $slugOrId) : '#' }}"
+                            class="shrink-0 block w-[320px]">
                             <article
                                 class="bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg hover:-translate-y-1 transition cursor-pointer">
                                 <img src="{{ $p['image'] }}" alt="" class="w-full aspect-[16/9] object-cover">
                                 <div class="p-5">
-                                    <span class="text-xs text-emerald-700 font-medium">
-                                        {{ $p['category'] ?? 'Program' }}
-                                    </span>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-xs text-emerald-700 font-medium">
+                                            {{ $p['category'] ?? 'Program' }}
+                                        </span>
+
+                                        {{-- badge status --}}
+                                        @if (!empty($p['status']))
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px]
+                                     @if ($p['status'] === 'Selesai') bg-slate-100 text-slate-600
+                                     @elseif($p['status'] === 'Berakhir Hari Ini')
+                                        bg-orange-100 text-orange-700
+                                     @else
+                                        bg-emerald-50 text-emerald-700 @endif
+                        ">
+                                                {{ $p['status'] }}
+                                            </span>
+                                        @endif
+                                    </div>
+
                                     <h3
                                         class="mt-1 font-semibold text-slate-800 leading-snug line-clamp-2 min-h-[3.25rem]">
                                         {{ $p['title'] }}
                                     </h3>
 
+                                    {{-- Dana & sisa hari --}}
                                     <div class="mt-4 grid grid-cols-2 text-xs text-slate-500">
                                         <div>
                                             <div>Dana Terkumpul</div>
                                             <div class="text-slate-900 font-medium">
-                                                Rp {{ number_format($p['raised'] ?? 0, 0, ',', '.') }}
+                                                Rp {{ number_format($raised, 0, ',', '.') }}
                                             </div>
                                         </div>
                                         <div class="text-right">
                                             <div>Sisa Waktu</div>
                                             <div class="text-slate-900 font-medium">
-                                                {{ $p['days_left'] ?? '-' }} {{ isset($p['days_left']) ? 'Hari' : '' }}
+                                                @if (is_null($p['days_left']))
+                                                    Tanpa batas
+                                                @else
+                                                    {{ $p['days_left'] }} Hari
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
 
+                                    {{-- Progress bar + indikator detail --}}
                                     <div class="mt-3">
                                         <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
                                             <div class="h-1.5 bg-emerald-600 rounded-full"
-                                                style="width: {{ $percent }}%">
-                                            </div>
+                                                style="width: {{ $percent }}%"></div>
+                                        </div>
+                                        <div class="mt-1 flex items-center justify-between text-[11px] text-slate-500">
+                                            <span>
+                                                Rp {{ number_format($raised, 0, ',', '.') }}
+                                                <span class="text-slate-400">dari</span>
+                                                Rp {{ number_format($target, 0, ',', '.') }}
+                                            </span>
+                                            <span class="font-medium text-emerald-600">
+                                                {{ $percent }}%
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             </article>
                         </a>
                     @endforeach
+
+
                 </div>
             </div>
 

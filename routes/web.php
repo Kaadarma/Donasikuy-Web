@@ -13,19 +13,10 @@ use App\Http\Controllers\KycController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DanaPuniaController;
 
-// =====================
-// HALAMAN UTAMA
-// =====================
 
-// Root (/) -> Landing/home page yang pakai home.blade.php
 Route::get('/', [LandingController::class, 'index'])->name('landing');
-// pastikan di LandingController@index kamu return view('home');
 
-
-// =====================
-// AUTH MANUAL (LOGIN / REGISTER)
-// =====================
-
+//login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 
@@ -55,7 +46,7 @@ Route::get('/dashboard', function () {
 // =====================
 
 Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
-Route::get('/program/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');
+Route::get('/programs/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');
 
 // Search
 Route::get('/search', [ProgramController::class, 'search'])->name('program.search');
@@ -77,15 +68,20 @@ Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])->n
 // DONASI
 // =====================
 
-Route::get('/nominal', [DonasiController::class, 'nominal'])->name('nominal');
-Route::get('/datadiri', [DonasiController::class, 'dataDiri'])->name('datadiri');
-Route::post('/donasi/proses', [DonasiController::class, 'prosesDonasi'])->name('donasi.proses');
-Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])->name('donasi.sukses');
+Route::get('/donasi/{slug}/nominal', [DonasiController::class, 'nominal'])
+    ->name('donasi.nominal');
+
+Route::get('/donasi/{slug}/data-diri', [DonasiController::class, 'dataDiri'])
+    ->name('donasi.dataDiri');
 
 
-// =====================
-// LOGIN DENGAN GOOGLE (Socialite)
-// =====================
+Route::post('/donasi/{slug}/proses', [DonasiController::class, 'proses'])
+    ->name('donasi.proses');
+
+
+Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])
+    ->name('donasi.sukses');
+
 
 // Cukup pakai GoogleController saja
 Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])
@@ -127,7 +123,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
     // forgot password
-    // FORGOT PASSWORD
     Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])
         ->name('password.request');
 
@@ -157,3 +152,8 @@ Route::middleware('auth')->get('/kyc-required', function () {
     $kyc = \App\Models\KycSubmission::where('user_id', auth()->id())->first();
     return view('kyc.required', compact('kyc'));
 })->name('kyc.required');
+
+// pembayaran
+Route::post('/donasi/{program:slug}/proses', [DonasiController::class, 'proses'])->name('donasi.proses');
+Route::get('/pembayaran/{kode}', [PembayaranController::class, 'show']) ->name('pembayaran.show');
+
