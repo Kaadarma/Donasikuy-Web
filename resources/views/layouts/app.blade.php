@@ -142,7 +142,7 @@
             <nav class="flex items-center gap-6">
                 <a href="#" class="text-slate-700 font-medium hover:text-emerald-600">Donasi</a>
                 <a href="#" class="text-slate-700 font-medium hover:text-emerald-600">Event</a>
-                <a href="#" class="text-slate-700 font-medium hover:text-emerald-600">Punia</a>
+                <a href="{{ route('dana-punia.index') }}" class="text-slate-700 font-medium hover:text-emerald-600">Punia</a>
 
                 @guest
                     <a href="{{ route('login') }}" class="text-slate-700 font-medium hover:text-emerald-600">

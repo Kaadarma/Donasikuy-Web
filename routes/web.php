@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DanaPuniaController;
 
 // =====================
 // HALAMAN UTAMA
@@ -147,3 +148,6 @@ Route::middleware('auth')->group(function () {
     // kalau nanti ada POST untuk simpan galang dana:
     // Route::post('/galang-dana', [GalangDanaController::class, 'store'])->name('galang.store');
 });
+
+// dana punia
+Route::get('/dana-punia', [DanaPuniaController::class, 'index'])->name('dana-punia.index');
