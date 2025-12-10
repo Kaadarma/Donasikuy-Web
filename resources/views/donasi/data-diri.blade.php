@@ -34,15 +34,33 @@
 
                         <hr class="border-slate-200 mb-4">
 
+                        {{-- TAMPILKAN ERROR VALIDASI --}}
+                        @if ($errors->any())
+                            <div class="mb-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl px-3 py-2">
+                                <p class="font-semibold mb-1">Ups, ada yang perlu kamu cek lagi:</p>
+                                <ul class="list-disc ml-4 space-y-0.5">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         {{-- FORM TUNGGAL DI DALAM CARD --}}
                         <form id="donasiForm" action="{{ route('donasi.proses', $program['slug']) }}" method="POST"
                             class="space-y-4">
                             @csrf
 
                             {{-- Hidden input utama --}}
-                            <input type="hidden" name="nominal" value="{{ $nominal }}">
-                            <input type="hidden" name="payment_method" id="paymentMethodInput" value="qris">
-                            <input type="hidden" name="voucher_code" id="voucherCodeInput">
+                            {{-- nominal WAJIB integer untuk lolos rule "integer|min:10000" --}}
+                            <input type="hidden" name="nominal"
+                                value="{{ old('nominal', (int) str_replace('.', '', $nominal)) }}">
+
+                            <input type="hidden" name="payment_method" id="paymentMethodInput"
+                                value="{{ old('payment_method', 'qris') }}">
+
+                            <input type="hidden" name="voucher_code" id="voucherCodeInput"
+                                value="{{ old('voucher_code') }}">
 
                             {{-- Ringkasan --}}
                             <div class="flex items-start justify-between mb-2">
@@ -60,7 +78,8 @@
                                     </a>
 
                                     <p class="mt-1 text-sm font-bold text-slate-900">
-                                        Rp {{ number_format((int) str_replace('.', '', $nominal), 0, ',', '.') }}
+                                        Rp
+                                        {{ number_format((int) str_replace('.', '', old('nominal', $nominal)), 0, ',', '.') }}
                                     </p>
                                 </div>
                             </div>
@@ -75,8 +94,11 @@
                                 <div class="flex items-center gap-2">
                                     <div id="selectedPaymentDisplay"
                                         class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-50 border border-slate-200">
+                                        {{-- default QRIS / tampilan akan diupdate JS saat pilih metode --}}
                                         <img src="{{ asset('images/qris.png') }}" alt="QRIS" class="h-4">
-                                        <span class="text-[11px] font-semibold text-slate-800">QRIS</span>
+                                        <span class="text-[11px] font-semibold text-slate-800">
+                                            {{ strtoupper(old('payment_method', 'QRIS')) }}
+                                        </span>
                                     </div>
 
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-slate-500"
@@ -115,7 +137,7 @@
                                     <label class="block text-xs font-medium text-slate-700 mb-1">
                                         Nama Lengkap *
                                     </label>
-                                    <input type="text" name="nama" id="nama"
+                                    <input type="text" name="nama" id="nama" value="{{ old('nama') }}"
                                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs
                   focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
                                 </div>
@@ -125,7 +147,7 @@
                                     <label class="block text-xs font-medium text-slate-700 mb-1">
                                         No Telepon *
                                     </label>
-                                    <input type="text" name="telepon" id="telepon"
+                                    <input type="text" name="telepon" id="telepon" value="{{ old('telepon') }}"
                                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs
                   focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
                                 </div>
@@ -135,7 +157,7 @@
                                     <label class="block text-xs font-medium text-slate-700 mb-1">
                                         Email (Opsional)
                                     </label>
-                                    <input type="email" name="email" id="email"
+                                    <input type="email" name="email" id="email" value="{{ old('email') }}"
                                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs
                   focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
                                 </div>
@@ -146,14 +168,16 @@
                                     <span class="text-xs font-medium text-slate-800">Sembunyikan nama saya</span>
 
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" name="is_anonymous" class="sr-only peer">
+                                        <input type="checkbox" name="is_anonymous" value="1" class="sr-only peer"
+                                            @checked(old('is_anonymous'))>
                                         <div
                                             class="w-9 h-5 bg-slate-300 rounded-full peer-checked:bg-emerald-500 transition
-                                   after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                                   after:h-4 after:w-4 after:bg-white after:rounded-full after:shadow
-                                   peer-checked:after:translate-x-4 after:transition-all">
+           after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+           after:h-4 after:w-4 after:bg-white after:rounded-full after:shadow
+           peer-checked:after:translate-x-4 after:transition-all">
                                         </div>
                                     </label>
+
                                 </div>
 
                                 {{-- Toggle Pesan --}}
@@ -161,7 +185,8 @@
                                     <span class="text-xs font-medium text-slate-800">Beri Pesan (Opsional)</span>
 
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="toggleMessage" class="sr-only peer">
+                                        <input type="checkbox" id="toggleMessage" class="sr-only peer"
+                                            @checked(old('pesan'))>
                                         <div
                                             class="w-9 h-5 bg-slate-300 rounded-full peer-checked:bg-emerald-500 transition
                                    after:content-[''] after:absolute after:top-[2px] after:left-[2px]
@@ -171,11 +196,11 @@
                                     </label>
                                 </div>
 
-                                <div id="messageBox" class="hidden mb-3">
+                                <div id="messageBox" class="{{ old('pesan') ? '' : 'hidden' }} mb-3">
                                     <textarea name="pesan" rows="3"
                                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs
                                      focus:ring-1 focus:ring-emerald-500 resize-none"
-                                        placeholder="Tulis pesan dukungan..."></textarea>
+                                        placeholder="Tulis pesan dukungan...">{{ old('pesan') }}</textarea>
                                 </div>
                             </div>
 
@@ -225,7 +250,7 @@
             <p class="text-sm text-slate-700 leading-relaxed mb-6">
                 Donasi Anda senilai
                 <span class="font-bold text-slate-900">
-                    Rp {{ number_format((int) str_replace('.', '', $nominal), 0, ',', '.') }}
+                    Rp {{ number_format((int) str_replace('.', '', old('nominal', $nominal)), 0, ',', '.') }}
                 </span>
                 akan disalurkan ke campaign
                 <span class="font-semibold text-amber-500">
@@ -251,6 +276,10 @@
             </div>
         </div>
     </div>
+
+    {{-- MODAL METODE PEMBAYARAN --}}
+    {{-- ... (bagian modal payment, modal voucher, toast, dan script JS kamu tetap sama persis) --}}
+    {{-- aku tidak ubah bagian bawah JS-mu selain di fungsi validateAndOpenConfirm yang sudah cocok --}}
 
     {{-- MODAL METODE PEMBAYARAN --}}
     <div id="paymentModal" class="fixed inset-0 z-50 hidden items-start justify-center bg-black/40">
@@ -393,7 +422,7 @@
                     <input type="text" id="voucherInput"
                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
                                   focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
-                        placeholder="Masukkan kode voucher">
+                        placeholder="Masukkan kode voucher" value="{{ old('voucher_code') }}">
                 </div>
 
                 <div class="text-[11px] text-slate-600 leading-relaxed">

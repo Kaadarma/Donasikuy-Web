@@ -77,10 +77,19 @@ Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])->n
 // DONASI
 // =====================
 
-Route::get('/donasi/{slug}/nominal', [DonasiController::class, 'nominal'])->name('donasi.nominal');
-Route::match(['GET', 'POST'], '/donasi/{slug}/data-diri', [DonasiController::class, 'dataDiri'])->name('donasi.dataDiri');
-Route::post('/donasi/{slug}/proses', [DonasiController::class, 'prosesDonasi'])->name('donasi.proses');
-Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])->name('donasi.sukses');
+Route::get('/donasi/{slug}/nominal', [DonasiController::class, 'nominal'])
+    ->name('donasi.nominal');
+
+Route::get('/donasi/{slug}/data-diri', [DonasiController::class, 'dataDiri'])
+    ->name('donasi.dataDiri');
+
+// 🔥 jalur ke MIDTRANS
+Route::post('/donasi/{slug}/proses', [DonasiController::class, 'proses'])
+    ->name('donasi.proses');
+
+// halaman terima kasih, nanti dipakai setelah pembayaran
+Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])
+    ->name('donasi.sukses');
 
 
 // =====================
