@@ -48,67 +48,67 @@ class DonasiController extends Controller
     /**
      * PROSES DONASI (PAKAI MIDTRANS SNAP TOKEN)
      */
- public function proses(Request $request, string $slug)
-{
-    $program = $this->getProgram($slug);
+    public function proses(Request $request, string $slug)
+    {
+        $program = $this->getProgram($slug);
 
-    $data = $request->validate([
-        'nominal'        => ['required', 'integer', 'min:10000'],
-        'payment_method' => ['required', 'string'],
-        'voucher_code'   => ['nullable', 'string'],
-        'nama'           => ['required', 'string', 'max:100'],
-        'telepon'        => ['required', 'string', 'min:8'],
-        'email'          => ['nullable', 'email'],
-        'is_anonymous'   => ['nullable', 'boolean'],
-        'pesan'          => ['nullable', 'string', 'max:500'],
-    ]);
+        $data = $request->validate([
+            'nominal' => ['required', 'integer', 'min:10000'],
+            'payment_method' => ['required', 'string'],
+            'voucher_code' => ['nullable', 'string'],
+            'nama' => ['required', 'string', 'max:100'],
+            'telepon' => ['required', 'string', 'min:8'],
+            'email' => ['nullable', 'email'],
+            'is_anonymous' => ['nullable', 'boolean'],
+            'pesan' => ['nullable', 'string', 'max:500'],
+        ]);
 
+        // anonim / tidak
+        $isAnonymous = $request->boolean('is_anonymous');
+        $displayName = $isAnonymous ? 'Siapa ya?' : $data['nama'];
 
-    $isAnonymous = $request->boolean('is_anonymous');
+        // order id
+        $orderId = 'DON-'.($program['id'] ?? 'X').'-'.Str::random(8);
 
+        // config midtrans
+        $this->setMidtransConfig();
 
-    $displayName = $isAnonymous ? 'Aku siapa?' : $data['nama'];
-
-    $orderId = 'DON-' . ($program['id'] ?? 'X') . '-' . Str::random(8);
-
-    $this->setMidtransConfig();
-
-    $params = [
-        'transaction_details' => [
-            'order_id'     => $orderId,
-            'gross_amount' => $data['nominal'],
-        ],
-        'customer_details' => [
-            // kalau mau Midtrans juga lihat nama anonim:
-            'first_name' => $displayName,
-            'email'      => $data['email'] ?? null,
-            'phone'      => $data['telepon'],
-        ],
-        'item_details' => [
-            [
-                'id'       => $program['id'] ?? 0,
-                'price'    => $data['nominal'],
-                'quantity' => 1,
-                'name'     => substr($program['title'] ?? 'Donasi', 0, 50),
+        // parameter snap
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $data['nominal'],
             ],
-        ],
-        'custom_field1' => $program['id'] ?? null,
-        'custom_field2' => $program['title'] ?? null,
-        'custom_field3' => $data['payment_method'],
-    ];
+            'customer_details' => [
+                'first_name' => $displayName,
+                'email' => $data['email'] ?? null,
+                'phone' => $data['telepon'],
+            ],
+            'item_details' => [
+                [
+                    'id' => $program['id'] ?? 0,
+                    'price' => $data['nominal'],
+                    'quantity' => 1,
+                    'name' => substr($program['title'] ?? 'Donasi', 0, 50),
+                ],
+            ],
+            'custom_field1' => $program['id'] ?? null,
+            'custom_field2' => $program['title'] ?? null,
+            'custom_field3' => $data['payment_method'],
+        ];
 
-    $snapToken = \Midtrans\Snap::getSnapToken($params);
+        // ambil snap token
+        $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-    return view('donasi.bayar', [
-        'program'      => $program,
-        'data'         => $data,
-        'orderId'      => $orderId,
-        'snapToken'    => $snapToken,
-        'displayName'  => $displayName,   
-        'isAnonymous'  => $isAnonymous,   
-    ]);
-}
-
+        // ⬅️ PENTING: cuma kirim ke view "bayar", tidak panggil popup di sini
+        return view('donasi.bayar', [
+            'program' => $program,
+            'data' => $data,
+            'orderId' => $orderId,
+            'snapToken' => $snapToken,
+            'displayName' => $displayName,
+        ]);
+    }
 
     public function prosesDonasi(Request $request, string $slug)
     {
@@ -127,7 +127,7 @@ class DonasiController extends Controller
         return redirect()
             ->route('donasi.sukses')
             ->with([
-                'program' => $program,   
+                'program' => $program,
                 'nominal' => $nominal,
                 'paymentMethod' => $paymentMethod,
                 'voucherCode' => $voucherCode,
@@ -135,10 +135,30 @@ class DonasiController extends Controller
             ]);
     }
 
-
-    public function sukses()
+    public function pembayaran(/* parameter lain, misal $slug */)
     {
-        return view('donasi.sukses');
+        // ... logika ambil $program, $data, bikin $snapToken, dll
+
+        // SIMPAN KE SESSION UNTUK HALAMAN SUKSES
+        session([
+            'donasi_program' => $program['title'] ?? ($program->title ?? null),
+            'donasi_nominal' => $data['nominal'] ?? null,
+        ]);
+
+        return view('donasi.pembayaran', [
+            'program' => $program,
+            'data' => $data,
+            'snapToken' => $snapToken,
+            'orderId' => $orderId ?? null,
+        ]);
+    }
+
+    public function sukses(Request $request)
+    {
+        $program = $request->query('program', 'Program Tidak Dikenal');
+        $nominal = $request->query('nominal', 0);
+
+        return view('donasi.sukses', compact('program', 'nominal'));
     }
 
     protected function setMidtransConfig(): void

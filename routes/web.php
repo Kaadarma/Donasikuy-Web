@@ -13,19 +13,10 @@ use App\Http\Controllers\KycController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DanaPuniaController;
 
-// =====================
-// HALAMAN UTAMA
-// =====================
 
-// Root (/) -> Landing/home page yang pakai home.blade.php
 Route::get('/', [LandingController::class, 'index'])->name('landing');
-// pastikan di LandingController@index kamu return view('home');
 
-
-// =====================
-// AUTH MANUAL (LOGIN / REGISTER)
-// =====================
-
+//login
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 
@@ -163,3 +154,4 @@ Route::get('/dana-punia', [DanaPuniaController::class, 'index'])->name('dana-pun
 // pembayaran
 Route::post('/donasi/{program:slug}/proses', [DonasiController::class, 'proses'])->name('donasi.proses');
 Route::get('/pembayaran/{kode}', [PembayaranController::class, 'show']) ->name('pembayaran.show');
+

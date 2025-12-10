@@ -15,14 +15,9 @@ class LandingController extends Controller
             'total_program' => 6,
         ];
 
-        // 🔥 GANTI DI SINI:
-        // Dulu: $programs = [ ... array manual ... ];
-        // Sekarang: ambil dari ProgramController supaya ada id & slug
+ 
         $programs = app(ProgramController::class)->allPrograms();
-        // Kalau mau batasi misalnya cuma 6:
-        // $programs = array_slice(app(ProgramController::class)->allPrograms(), 0, 6);
 
-        // Banner/hero slider
         $banners = [
             [
                 'image' => asset('images/bencana.jpg'),
