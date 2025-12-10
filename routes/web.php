@@ -74,18 +74,14 @@ Route::get('/donasi/{slug}/nominal', [DonasiController::class, 'nominal'])
 Route::get('/donasi/{slug}/data-diri', [DonasiController::class, 'dataDiri'])
     ->name('donasi.dataDiri');
 
-// 🔥 jalur ke MIDTRANS
+
 Route::post('/donasi/{slug}/proses', [DonasiController::class, 'proses'])
     ->name('donasi.proses');
 
-// halaman terima kasih, nanti dipakai setelah pembayaran
+
 Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])
     ->name('donasi.sukses');
 
-
-// =====================
-// LOGIN DENGAN GOOGLE (Socialite)
-// =====================
 
 // Cukup pakai GoogleController saja
 Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])

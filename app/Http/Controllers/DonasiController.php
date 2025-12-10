@@ -155,10 +155,21 @@ class DonasiController extends Controller
 
     public function sukses(Request $request)
     {
-        $program = $request->query('program', 'Program Tidak Dikenal');
-        $nominal = $request->query('nominal', 0);
+        $slug = $request->query('slug');              // slug program
+        $nominal = (int) $request->query('nominal', 0);  // jumlah donasi
 
-        return view('donasi.sukses', compact('program', 'nominal'));
+        // simpan delta donasi di session per slug
+        if ($slug && $nominal > 0) {
+            $overrides = session('donasi_overrides', []);
+            // simpan TAMBAHAN, bukan total final
+            $overrides[$slug] = ($overrides[$slug] ?? 0) + $nominal;
+            session(['donasi_overrides' => $overrides]);
+        }
+
+        return view('donasi.sukses', [
+            'program' => $slug ?? 'Program Tidak Dikenal', // bisa nanti diganti title kalau mau lebih cakep
+            'nominal' => $nominal,
+        ]);
     }
 
     protected function setMidtransConfig(): void

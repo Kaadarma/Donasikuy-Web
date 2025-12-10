@@ -117,8 +117,17 @@ class ProgramController extends Controller
     {
         $raw = $this->seed();
 
-        // dekorasi semua program
-        $decorated = array_map(function ($p) {
+        // ambil info donasi terakhir dari session
+        $lastSlug = session('last_donasi_slug');
+        $lastNominal = session('last_donasi_nominal', 0);
+
+        // dekorasi semua program + timpa raised untuk program yang barusan didonasi
+        $decorated = array_map(function ($p) use ($lastSlug, $lastNominal) {
+            // kalau slug di session cocok dengan slug program ini → naikkan raised-nya
+            if ($lastSlug && isset($p['slug']) && $p['slug'] === $lastSlug) {
+                $p['raised'] = ($p['raised'] ?? 0) + $lastNominal;
+            }
+
             return $this->decorateProgram($p);
         }, $raw);
 
@@ -176,77 +185,91 @@ class ProgramController extends Controller
         return $p;
     }
 
-    public function seed(): array
-    {
-        return [
-            1 => [
-                'id' => 1,
-                'slug' => 'sedekah-beras',
-                'category' => 'Sedekah',
-                'title' => 'Sedekah Beras',
-                'image' => asset('images/bencana.jpg'),
-                'banner' => asset('images/bencana.jpg'),
-                'raised' => 0,
-                'target' => 50_000_000,
-                // contoh: 64 hari dari sekarang
-                'deadline' => Carbon::now()->addDays(64)->toDateString(),
-            ],
-            2 => [
-                'id' => 2,
-                'slug' => 'bantu-bencana-gempa-dengan-kebutuhan-pokok',
-                'category' => 'Kemanusiaan',
-                'title' => 'Bantu Bencana Gempa dengan Kebutuhan Pokok',
-                'image' => asset('images/bencana1.jpg'),
-                'banner' => asset('images/bencana1.jpg'),
-                'raised' => 500_000_124,
-                'target' => 700_000_000,
-                // contoh: 2 hari dari sekarang
-                'deadline' => Carbon::now()->addDays(2)->toDateString(),
-            ],
-            3 => [
-                'id' => 3,
-                'slug' => 'bantuan-anak-yatim-dan-dhuafa',
-                'category' => 'Pendidikan',
-                'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
-                'image' => asset('images/yatim1.jpg'),
-                'banner' => asset('images/yatim1.jpg'),
-                'raised' => 235_366_942,
-                'target' => 300_000_000,
-                'deadline' => Carbon::now()->addDays(25)->toDateString(),
-            ],
-            4 => [
-                'id' => 4,
-                'slug' => 'bantuan-a',
-                'category' => 'Pendidikan',
-                'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
-                'image' => asset('images/yatim1.jpg'),
-                'banner' => asset('images/yatim1.jpg'),
-                'raised' => 235_366_942,
-                'target' => 300_000_000,
-                'deadline' => Carbon::now()->addDays(25)->toDateString(),
-            ],
-            5 => [
-                'id' => 5,
-                'slug' => 'gempa-sumedang',
-                'category' => 'Bencana Alam',
-                'title' => 'Gempa Bumi di Sumedang – Rumah Warga Rusak Berat',
-                'image' => asset('images/gempa1.jpeg'),
-                'banner' => asset('images/gempa1.jpeg'),
-                'raised' => 32_000_000,
-                'target' => 250_000_000,
-                'deadline' => Carbon::now()->addDays(18)->toDateString(),
-            ],
-            6 => [
-                'id' => 6,
-                'slug' => 'kekeringan-ntt',
-                'category' => 'Kemanusiaan',
-                'title' => 'Bantu Air Bersih untuk Warga Terdampak Kekeringan di NTT',
-                'image' => asset('images/airbersih.jpeg'),
-                'banner' => asset('images/airbersih.jpeg'),
-                'raised' => 15_900_000,
-                'target' => 120_000_000,
-                'deadline' => Carbon::now()->addDays(40)->toDateString(),
-            ],
-        ];
+public function seed(): array
+{
+    // DATA DASAR (SEPERTI SEBELUMNYA)
+    $programs = [
+        1 => [
+            'id' => 1,
+            'slug' => 'sedekah-beras',
+            'category' => 'Sedekah',
+            'title' => 'Sedekah Beras',
+            'image' => asset('images/bencana.jpg'),
+            'banner' => asset('images/bencana.jpg'),
+            'raised' => 0,
+            'target' => 50_000_000,
+            'deadline' => Carbon::now()->addDays(64)->toDateString(),
+        ],
+        2 => [
+            'id' => 2,
+            'slug' => 'bantu-bencana-gempa-dengan-kebutuhan-pokok',
+            'category' => 'Kemanusiaan',
+            'title' => 'Bantu Bencana Gempa dengan Kebutuhan Pokok',
+            'image' => asset('images/bencana1.jpg'),
+            'banner' => asset('images/bencana1.jpg'),
+            'raised' => 500_000_124,
+            'target' => 700_000_000,
+            'deadline' => Carbon::now()->addDays(2)->toDateString(),
+        ],
+        3 => [
+            'id' => 3,
+            'slug' => 'bantuan-anak-yatim-dan-dhuafa',
+            'category' => 'Pendidikan',
+            'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
+            'image' => asset('images/yatim1.jpg'),
+            'banner' => asset('images/yatim1.jpg'),
+            'raised' => 235_366_942,
+            'target' => 300_000_000,
+            'deadline' => Carbon::now()->addDays(25)->toDateString(),
+        ],
+        4 => [
+            'id' => 4,
+            'slug' => 'bantuan-a',
+            'category' => 'Pendidikan',
+            'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
+            'image' => asset('images/yatim1.jpg'),
+            'banner' => asset('images/yatim1.jpg'),
+            'raised' => 235_366_942,
+            'target' => 300_000_000,
+            'deadline' => Carbon::now()->addDays(25)->toDateString(),
+        ],
+        5 => [
+            'id' => 5,
+            'slug' => 'gempa-sumedang',
+            'category' => 'Bencana Alam',
+            'title' => 'Gempa Bumi di Sumedang – Rumah Warga Rusak Berat',
+            'image' => asset('images/gempa1.jpeg'),
+            'banner' => asset('images/gempa1.jpeg'),
+            'raised' => 32_000_000,
+            'target' => 250_000_000,
+            'deadline' => Carbon::now()->addDays(18)->toDateString(),
+        ],
+        6 => [
+            'id' => 6,
+            'slug' => 'kekeringan-ntt',
+            'category' => 'Kemanusiaan',
+            'title' => 'Bantu Air Bersih untuk Warga Terdampak Kekeringan di NTT',
+            'image' => asset('images/airbersih.jpeg'),
+            'banner' => asset('images/airbersih.jpeg'),
+            'raised' => 15_900_000,
+            'target' => 120_000_000,
+            'deadline' => Carbon::now()->addDays(40)->toDateString(),
+        ],
+    ];
+
+    // AMBIL DELTA RAISED DARI SESSION
+    $overrides = session('donasi_overrides', []);
+
+    // TAMBAHKAN DELTA KE RAISED BERDASARKAN SLUG
+    foreach ($programs as &$p) {
+        if (!empty($p['slug']) && isset($overrides[$p['slug']])) {
+            $p['raised'] = ($p['raised'] ?? 0) + $overrides[$p['slug']];
+        }
     }
+    unset($p); // safety
+
+    return $programs;
 }
+
+}
+

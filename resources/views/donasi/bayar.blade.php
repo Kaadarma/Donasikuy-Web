@@ -139,12 +139,12 @@
 
                     <script>
                         function testSuccess() {
-                            const orderId = @json($orderId);
                             window.location.href =
-                                "{{ route('donasi.sukses') }}?order_id=" + encodeURIComponent(orderId);
+                                "/donasi/sukses" +
+                                "?slug={{ $program['slug'] ?? ($program['id'] ?? null) }}" +
+                                "&nominal={{ $data['nominal'] }}";
                         }
                     </script>
-
 
                     <p class="text-[11px] text-center text-slate-400">
                         Dengan melanjutkan, kamu setuju dengan syarat & ketentuan donasi yang berlaku.
@@ -217,8 +217,12 @@
 
                 window.snap.pay(snapToken, {
                     onSuccess: function(result) {
-                        window.location.href = "{{ route('donasi.sukses') }}";
+                        window.location.href =
+                            "/donasi/sukses" +
+                            "?slug={{ $program['slug'] ?? ($program['id'] ?? null) }}" +
+                            "&nominal={{ $data['nominal'] }}";
                     },
+
 
 
                     onPending: function(result) {
