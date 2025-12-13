@@ -329,3 +329,18 @@
     @stack('scripts')
 </body>
 </html>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.querySelector('input[name="q"]');
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        if (this.value.trim() === '') {
+            window.location.href = "{{ route('landing') }}";
+        }
+    });
+});
+</script>
+@endpush

@@ -68,19 +68,12 @@ Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])->n
 // DONASI
 // =====================
 
-Route::get('/donasi/{slug}/nominal', [DonasiController::class, 'nominal'])
-    ->name('donasi.nominal');
-
-Route::get('/donasi/{slug}/data-diri', [DonasiController::class, 'dataDiri'])
-    ->name('donasi.dataDiri');
-
-
-Route::post('/donasi/{slug}/proses', [DonasiController::class, 'proses'])
-    ->name('donasi.proses');
-
-
-Route::get('/donasi/sukses', [DonasiController::class, 'sukses'])
-    ->name('donasi.sukses');
+Route::middleware('auth')->group(function () {
+    Route::get('/donasi/{slug}/nominal', [DonasiController::class, 'nominal'])->name('donasi.nominal');
+    Route::get('/donasi/{slug}/data-diri', [DonasiController::class, 'dataDiri'])->name('donasi.dataDiri');
+    Route::post('/donasi/{slug}/proses', [DonasiController::class, 'proses']) ->name('donasi.proses');
+    Route::get('/donasi/sukses', [DonasiController::class, 'sukses']) ->name('donasi.sukses');
+});
 
 
 // Cukup pakai GoogleController saja

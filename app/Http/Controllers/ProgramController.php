@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Donation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProgramController extends Controller
 {
+    
     public function index()
     {
         // pakai data yang sudah didekorasi (ada days_left)
@@ -16,6 +16,8 @@ class ProgramController extends Controller
 
         return view('programs.index', compact('programs'));
     }
+
+    
 
     public function show($idOrSlug)
     {
@@ -66,7 +68,15 @@ class ProgramController extends Controller
 
     public function search(Request $request)
     {
-        $keyword = strtolower($request->q ?? '');
+
+        $q = trim((string) ($request->q ?? ''));
+
+        if ($q === '') {
+            return redirect()->route('landing'); 
+        
+        }
+
+        $keyword = strtolower($q);
 
         $allRaw = $this->seed();
         $all = array_map(fn ($p) => $this->decorateProgram($p), $allRaw);
@@ -84,23 +94,23 @@ class ProgramController extends Controller
         $collection = collect($filtered);
 
         $perPage = 9;
-        $page = request()->input('page', 1);
+        $page = (int) $request->input('page', 1);
 
         $items = $collection
             ->slice(($page - 1) * $perPage, $perPage)
             ->values();
 
-        $programs = new LengthAwarePaginator(
+        $programs = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,
             $collection->count(),
             $perPage,
             $page,
-            ['path' => request()->url(), 'query' => request()->query()]
+            ['path' => $request->url(), 'query' => $request->query()]
         );
 
         return view('programs.search_result', [
             'programs' => $programs,
-            'keyword' => $request->q,
+            'keyword' => $q, 
         ]);
     }
 
@@ -145,36 +155,43 @@ class ProgramController extends Controller
         return null;
     }
 
-    private function decorateProgram(array $p): array
-    {
-        // default
-        $p['days_left'] = null;
-        $p['status'] = 'Tanpa Batas Waktu';
+private function decorateProgram(array $p): array
+{
+ 
+    $programId = $p['id'] ?? null;
+    $raisedDb = 0;
 
-        if (! empty($p['deadline'])) {
-            $today = \Carbon\Carbon::now()->startOfDay();
-            $endDate = \Carbon\Carbon::parse($p['deadline'])->startOfDay();
-
-            // selisih hari, bisa negatif kalau sudah lewat
-            $diff = $today->diffInDays($endDate, false);
-
-            if ($diff > 0) {
-                // masih ada sisa hari
-                $p['days_left'] = $diff;
-                $p['status'] = 'Sedang Berjalan';
-            } elseif ($diff === 0) {
-                // hari terakhir
-                $p['days_left'] = 0;
-                $p['status'] = 'Berakhir Hari Ini';
-            } else {
-                // sudah lewat deadline
-                $p['days_left'] = 0;
-                $p['status'] = 'Selesai';
-            }
-        }
-
-        return $p;
+    if ($programId) {
+        $raisedDb = (int) Donation::query()
+            ->where('program_id', $programId)
+            ->whereIn('status', ['success', 'settlement', 'paid'])
+            ->sum('amount');
     }
+
+    $p['raised'] = $raisedDb;
+    $p['days_left'] = null;
+    $p['status'] = 'Tanpa Batas Waktu';
+
+    if (! empty($p['deadline'])) {
+        $today = \Carbon\Carbon::now()->startOfDay();
+        $endDate = \Carbon\Carbon::parse($p['deadline'])->startOfDay();
+
+        $diff = $today->diffInDays($endDate, false);
+
+        if ($diff > 0) {
+            $p['days_left'] = $diff;
+            $p['status'] = 'Sedang Berjalan';
+        } elseif ($diff === 0) {
+            $p['days_left'] = 0;
+            $p['status'] = 'Berakhir Hari Ini';
+        } else {
+            $p['days_left'] = 0;
+            $p['status'] = 'Selesai';
+        }
+    }
+
+    return $p;
+}
 
     public function seed(): array
     {

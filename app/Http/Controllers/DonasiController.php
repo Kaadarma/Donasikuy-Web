@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Donation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Models\Donation;
+use Illuminate\Support\Facades\Auth;
+
 
 class DonasiController extends Controller
 {
-    /**
-     * Ambil program dari ProgramController berdasarkan slug/id
-     */
     private function getProgram(string $slug): array
     {
         $pc = app(ProgramController::class);
@@ -22,9 +21,6 @@ class DonasiController extends Controller
         return $program; // array
     }
 
-    /**
-     * Halaman pilih nominal donasi
-     */
     public function nominal(Request $request, string $slug)
     {
         $program = $this->getProgram($slug);
@@ -34,9 +30,6 @@ class DonasiController extends Controller
         return view('donasi.nominal', compact('program', 'nominal'));
     }
 
-    /**
-     * Halaman input data diri donatur
-     */
     public function dataDiri(Request $request, string $slug)
     {
         $program = $this->getProgram($slug);
@@ -46,9 +39,6 @@ class DonasiController extends Controller
         return view('donasi.data-diri', compact('program', 'nominal'));
     }
 
-    /**
-     * PROSES DONASI (PAKAI MIDTRANS SNAP TOKEN)
-     */
     public function proses(Request $request, string $slug)
     {
         $program = $this->getProgram($slug);
@@ -60,27 +50,26 @@ class DonasiController extends Controller
             'nama' => ['required', 'string', 'max:100'],
             'telepon' => ['required', 'string', 'min:8'],
             'email' => ['nullable', 'email'],
-            'is_anonymous' => ['required', 'in:0,1'], // ✅ wajib ada 0/1 dari form
+            'is_anonymous' => ['required', 'in:0,1'],
             'pesan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // ✅ BACA ANONIM DARI INPUT 0/1 (bukan boolean validator doang)
         $isAnonymous = ((int) $data['is_anonymous']) === 1;
 
         // Nama yang ditampilkan ke Midtrans
-        $displayName = $isAnonymous ? 'Anonim' : $data['nama'];
+        $displayName = $isAnonymous ? 'Siapa Ya?' : $data['nama'];
 
         // order id
         $orderId = 'DON-'.($program['id'] ?? 'X').'-'.Str::random(8);
 
-     
         Donation::create([
+            'user_id' => auth()->check() ? auth()->id() : null,
             'program_id' => $program['id'] ?? null,
-            'donor_name' => $data['nama'],                 // nama asli
-            'is_anonymous' => $isAnonymous ? 1 : 0,          // flag anonim
+            'donor_name' => $data['nama'],
+            'is_anonymous' => $isAnonymous ? 1 : 0,
             'amount' => (int) $data['nominal'],
             'message' => $data['pesan'] ?? null,
-            'status' => 'success',                     // sementara biar langsung tampil
+            'status' => 'success',
         ]);
 
         // config midtrans
@@ -148,9 +137,7 @@ class DonasiController extends Controller
 
     public function pembayaran(/* parameter lain, misal $slug */)
     {
-        // ... logika ambil $program, $data, bikin $snapToken, dll
 
-        // SIMPAN KE SESSION UNTUK HALAMAN SUKSES
         session([
             'donasi_program' => $program['title'] ?? ($program->title ?? null),
             'donasi_nominal' => $data['nominal'] ?? null,
