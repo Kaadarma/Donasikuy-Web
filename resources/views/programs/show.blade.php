@@ -99,9 +99,59 @@
                     </div>
 
                     {{-- Donatur --}}
+                    {{-- Donatur --}}
                     <div x-show="tab==='donatur'" x-transition class="mt-4">
-                        <p class="text-[13px] text-slate-600">Belum ada donatur tampil.</p>
+                        @if (!isset($donations) || $donations->isEmpty())
+                            <div class="rounded-xl border border-slate-200 bg-white p-4 text-[13px] text-slate-600">
+                                Belum ada donatur.
+                            </div>
+                        @else
+                            <div class="space-y-3">
+                                @foreach ($donations as $d)
+                                    @php
+                                        $isAnon = (int) ($d->is_anonymous ?? 0) === 1;
+                                        $name = $isAnon ? 'Siapa Ya?' : ($d->donor_name ?: 'Tanpa Nama');
+                                        $amount = (int) ($d->amount ?? 0);
+                                    @endphp
+
+                                    <div class="rounded-xl border border-slate-200 bg-white p-4 flex items-start gap-3">
+                                        <div
+                                            class="h-10 w-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-semibold">
+                                            {{ strtoupper(mb_substr($name, 0, 1)) }}
+                                        </div>
+
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <div class="text-sm font-semibold text-slate-900">
+                                                        {{ $name }}
+                                                        @if ($isAnon)
+                                                            <span
+                                                                class="ml-1 text-[11px] text-slate-400 font-medium">(anonimus)</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-[11px] text-slate-500">
+                                                        {{ optional($d->created_at)->format('d M Y, H:i') }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-sm font-semibold text-emerald-700 whitespace-nowrap">
+                                                    Rp {{ number_format($amount, 0, ',', '.') }}
+                                                </div>
+                                            </div>
+
+                                            @if (!empty($d->message))
+                                                <p class="mt-2 text-[13px] text-slate-700 leading-relaxed">
+                                                    “{{ $d->message }}”
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
+
 
                 </div>
             </div>

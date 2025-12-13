@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Models\Donation;
 
 class DonasiController extends Controller
 {
@@ -59,16 +60,28 @@ class DonasiController extends Controller
             'nama' => ['required', 'string', 'max:100'],
             'telepon' => ['required', 'string', 'min:8'],
             'email' => ['nullable', 'email'],
-            'is_anonymous' => ['nullable', 'boolean'],
+            'is_anonymous' => ['required', 'in:0,1'], // ✅ wajib ada 0/1 dari form
             'pesan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // anonim / tidak
-        $isAnonymous = $request->boolean('is_anonymous');
-        $displayName = $isAnonymous ? 'Siapa ya?' : $data['nama'];
+        // ✅ BACA ANONIM DARI INPUT 0/1 (bukan boolean validator doang)
+        $isAnonymous = ((int) $data['is_anonymous']) === 1;
+
+        // Nama yang ditampilkan ke Midtrans
+        $displayName = $isAnonymous ? 'Anonim' : $data['nama'];
 
         // order id
         $orderId = 'DON-'.($program['id'] ?? 'X').'-'.Str::random(8);
+
+     
+        Donation::create([
+            'program_id' => $program['id'] ?? null,
+            'donor_name' => $data['nama'],                 // nama asli
+            'is_anonymous' => $isAnonymous ? 1 : 0,          // flag anonim
+            'amount' => (int) $data['nominal'],
+            'message' => $data['pesan'] ?? null,
+            'status' => 'success',                     // sementara biar langsung tampil
+        ]);
 
         // config midtrans
         $this->setMidtransConfig();
@@ -97,10 +110,8 @@ class DonasiController extends Controller
             'custom_field3' => $data['payment_method'],
         ];
 
-        // ambil snap token
         $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-        // ⬅️ PENTING: cuma kirim ke view "bayar", tidak panggil popup di sini
         return view('donasi.bayar', [
             'program' => $program,
             'data' => $data,

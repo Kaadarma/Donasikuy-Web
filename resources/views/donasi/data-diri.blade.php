@@ -167,18 +167,20 @@
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-medium text-slate-800">Sembunyikan nama saya</span>
 
+                                    <input type="hidden" name="is_anonymous" value="0">
+
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" name="is_anonymous" value="1" class="sr-only peer"
-                                            @checked(old('is_anonymous'))>
+                                            @checked(old('is_anonymous') == 1)>
                                         <div
                                             class="w-9 h-5 bg-slate-300 rounded-full peer-checked:bg-emerald-500 transition
-           after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-           after:h-4 after:w-4 after:bg-white after:rounded-full after:shadow
-           peer-checked:after:translate-x-4 after:transition-all">
+            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+            after:h-4 after:w-4 after:bg-white after:rounded-full after:shadow
+            peer-checked:after:translate-x-4 after:transition-all">
                                         </div>
                                     </label>
-
                                 </div>
+
 
                                 {{-- Toggle Pesan --}}
                                 <div class="flex items-center justify-between mb-1">
@@ -277,11 +279,6 @@
         </div>
     </div>
 
-    {{-- MODAL METODE PEMBAYARAN --}}
-    {{-- ... (bagian modal payment, modal voucher, toast, dan script JS kamu tetap sama persis) --}}
-    {{-- aku tidak ubah bagian bawah JS-mu selain di fungsi validateAndOpenConfirm yang sudah cocok --}}
-
-    {{-- MODAL METODE PEMBAYARAN --}}
     <div id="paymentModal" class="fixed inset-0 z-50 hidden items-start justify-center bg-black/40">
         <div class="mt-10 w-full max-w-md rounded-2xl bg-white shadow-xl max-h-[80vh] overflow-hidden flex flex-col">
 
