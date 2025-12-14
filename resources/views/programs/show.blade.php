@@ -16,7 +16,8 @@
 
         {{-- Banner --}}
         <div class="relative rounded-xl overflow-hidden mt-3">
-            <img src="{{ $program['banner'] }}" alt="Banner" class="w-full h-[260px] md:h-[320px] object-cover">
+            <img src="{{ asset($program['banner']) }}" alt="Banner"class="w-full h-[260px] md:h-[320px] object-cover">
+
             <span class="absolute top-0 left-0 w-full h-[3px] bg-emerald-600"></span>
         </div>
 
@@ -205,7 +206,7 @@
                                 </div>
 
                                 {{-- Tombol Donasi --}}
-                                <a href="{{ route('donasi.nominal', $program['slug']) }}"
+                                <a href="{{ route('donasi.nominal', ['slug' => $program['slug']]) }}"
                                     class="w-full py-2.5 rounded-full text-[13px] font-semibold
           bg-gradient-to-r from-emerald-600 via-green-500 to-lime-400
           text-white shadow-md hover:brightness-105 active:scale-[0.98]
@@ -213,8 +214,8 @@
                                     DONASI SEKARANG
                                 </a>
 
-
-                            </div>
+                                
+                          </div>
                         </div>
                     </div>
 

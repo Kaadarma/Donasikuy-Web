@@ -19,11 +19,44 @@ class Donation extends Model
         'amount',
         'is_anonymous',
         'message',
-        'status',
+        'status', // contoh: pending, success, failed, expired
     ];
 
+    protected $casts = [
+        'is_anonymous' => 'boolean',
+        'amount' => 'integer',
+    ];
+
+    /**
+     * Relasi ke User
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relasi ke Program
+     */
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
+    }
+
+    /**
+     * Scope: donasi yang dianggap masuk ke "raised"
+     * Sesuaikan kalau status kamu beda (mis. 'settlement')
+     */
+    public function scopePaid($query)
+    {
+        return $query->whereIn('status', ['success', 'settlement', 'capture']);
+    }
+
+    /**
+     * Helper: cek apakah donasi sukses
+     */
+    public function getIsPaidAttribute(): bool
+    {
+        return in_array($this->status, ['success', 'settlement', 'capture'], true);
     }
 }

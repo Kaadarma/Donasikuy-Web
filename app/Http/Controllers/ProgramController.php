@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 
 class ProgramController extends Controller
 {
-    
     public function index()
     {
         // pakai data yang sudah didekorasi (ada days_left)
@@ -17,10 +16,62 @@ class ProgramController extends Controller
         return view('programs.index', compact('programs'));
     }
 
-    
-
     public function show($idOrSlug)
     {
+
+        $programModel = \App\Models\Program::query()
+            ->where('slug', $idOrSlug)
+            ->orWhere('id', $idOrSlug)
+            ->first();
+
+        if ($programModel) {
+            // hitung raised dari donations (kalau mau konsisten)
+            $raised = \App\Models\Donation::query()
+                ->where('program_id', $programModel->id)
+                ->whereIn('status', ['success', 'settlement', 'capture'])
+                ->sum('amount');
+
+            $program = [
+                'id' => $programModel->id,
+                'slug' => $programModel->slug,
+                'title' => $programModel->title,
+                'category' => $programModel->category,
+                'image' => $programModel->image,
+                'banner' => $programModel->banner ?? $programModel->image,
+                'description' => $programModel->description,
+                'short_description' => $programModel->short_description ?? null,
+                'target' => (int) ($programModel->target ?? 0),
+                'raised' => (int) $raised,
+                'deadline' => $programModel->deadline ?? null,
+            ];
+
+            $program = $this->decorateProgram($program);
+
+            // Ambil donasi program ini
+            $donations = \App\Models\Donation::query()
+                ->where('program_id', $program['id'])
+                ->orderByDesc('created_at')
+                ->get();
+
+            $updates = [
+                [
+                    'title' => 'Update Bantuan Terbaru',
+                    'date' => '6 November 2025',
+                    'body' => [
+                        'Penggalangan dana masih berlangsung.',
+                        'Terima kasih atas dukungan krama Bali.',
+                    ],
+                    'images' => [],
+                ],
+            ];
+
+            return view('programs.show', [
+                'program' => $program,
+                'updates' => $updates,
+                'donations' => $donations,
+            ]);
+        }
+
         $all = $this->seed();
         $program = null;
 
@@ -72,8 +123,8 @@ class ProgramController extends Controller
         $q = trim((string) ($request->q ?? ''));
 
         if ($q === '') {
-            return redirect()->route('landing'); 
-        
+            return redirect()->route('landing');
+
         }
 
         $keyword = strtolower($q);
@@ -110,7 +161,7 @@ class ProgramController extends Controller
 
         return view('programs.search_result', [
             'programs' => $programs,
-            'keyword' => $q, 
+            'keyword' => $q,
         ]);
     }
 
@@ -118,13 +169,11 @@ class ProgramController extends Controller
     {
         $raw = $this->seed();
 
-        // ambil info donasi terakhir dari session
         $lastSlug = session('last_donasi_slug');
         $lastNominal = session('last_donasi_nominal', 0);
 
-        // dekorasi semua program + timpa raised untuk program yang barusan didonasi
         $decorated = array_map(function ($p) use ($lastSlug, $lastNominal) {
-            // kalau slug di session cocok dengan slug program ini → naikkan raised-nya
+
             if ($lastSlug && isset($p['slug']) && $p['slug'] === $lastSlug) {
                 $p['raised'] = ($p['raised'] ?? 0) + $lastNominal;
             }
@@ -132,7 +181,6 @@ class ProgramController extends Controller
             return $this->decorateProgram($p);
         }, $raw);
 
-        // array_values supaya index 0..N
         return array_values($decorated);
     }
 
@@ -155,43 +203,43 @@ class ProgramController extends Controller
         return null;
     }
 
-private function decorateProgram(array $p): array
-{
- 
-    $programId = $p['id'] ?? null;
-    $raisedDb = 0;
+    private function decorateProgram(array $p): array
+    {
+        $programId = $p['id'] ?? null;
+        $raisedDb = 0;
 
-    if ($programId) {
-        $raisedDb = (int) Donation::query()
-            ->where('program_id', $programId)
-            ->whereIn('status', ['success', 'settlement', 'paid'])
-            ->sum('amount');
-    }
-
-    $p['raised'] = $raisedDb;
-    $p['days_left'] = null;
-    $p['status'] = 'Tanpa Batas Waktu';
-
-    if (! empty($p['deadline'])) {
-        $today = \Carbon\Carbon::now()->startOfDay();
-        $endDate = \Carbon\Carbon::parse($p['deadline'])->startOfDay();
-
-        $diff = $today->diffInDays($endDate, false);
-
-        if ($diff > 0) {
-            $p['days_left'] = $diff;
-            $p['status'] = 'Sedang Berjalan';
-        } elseif ($diff === 0) {
-            $p['days_left'] = 0;
-            $p['status'] = 'Berakhir Hari Ini';
-        } else {
-            $p['days_left'] = 0;
-            $p['status'] = 'Selesai';
+        if ($programId) {
+            $raisedDb = (int) Donation::query()
+                ->where('program_id', $programId)
+                ->whereIn('status', ['success', 'settlement', 'paid'])
+                ->sum('amount');
         }
-    }
 
-    return $p;
-}
+        // DEFAULT WAJIB
+        $p['raised'] = $raisedDb;
+        $p['days_left'] = $p['days_left'] ?? 0;
+        $p['status'] = $p['status'] ?? 'Tanpa Batas Waktu';
+
+        if (! empty($p['deadline'] ?? null)) {
+            $today = \Carbon\Carbon::now()->startOfDay();
+            $endDate = \Carbon\Carbon::parse($p['deadline'])->startOfDay();
+
+            $diff = $today->diffInDays($endDate, false);
+
+            if ($diff > 0) {
+                $p['days_left'] = $diff;
+                $p['status'] = 'Sedang Berjalan';
+            } elseif ($diff === 0) {
+                $p['days_left'] = 0;
+                $p['status'] = 'Berakhir Hari Ini';
+            } else {
+                $p['days_left'] = 0;
+                $p['status'] = 'Selesai';
+            }
+        }
+
+        return $p;
+    }
 
     public function seed(): array
     {

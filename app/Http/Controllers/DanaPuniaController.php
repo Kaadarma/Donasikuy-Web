@@ -2,36 +2,84 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Program;
 use Illuminate\Http\Request;
-use App\Models\Program; // sesuaikan dengan model punyamu
 
 class DanaPuniaController extends Controller
 {
     public function index(Request $request)
     {
-        // contoh filter sederhana (search + urutkan)
-        $search = $request->query('q');
-        $sort   = $request->query('sort', 'terbaru');
+        $q = trim((string) $request->query('q', ''));
+        $kategori = (string) $request->query('kategori', '');
+        $sort = (string) $request->query('sort', 'terbaru');
 
         $query = Program::query()
-            ->where('category', 'Dana Punia'); // sesuaikan nama kolom category-nya
+            ->leftJoin('donations', function ($join) {
+                $join->on('donations.program_id', '=', 'programs.id')
+                    ->whereIn('donations.status', ['success', 'settlement', 'capture']);
+            })
+            ->select([
+                'programs.id',
+                'programs.slug',
+                'programs.title',
+                'programs.category',
+                'programs.image',
+                'programs.banner',
+                'programs.target',
+                'programs.created_at',
+            ])
+            ->selectRaw('COALESCE(SUM(donations.amount),0) as raised_calc')
+            ->groupBy([
+                'programs.id',
+                'programs.slug',
+                'programs.title',
+                'programs.category',
+                'programs.image',
+                'programs.banner',
+                'programs.target',
+                'programs.created_at',
+            ]);
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+        // filter kategori
+        if ($kategori !== '') {
+            $query->where('programs.category', $kategori);
+        }
+
+       
+        if ($q !== '') {
+            $query->where(function ($w) use ($q) {
+                $w->where('programs.title', 'like', "%{$q}%")
+                    ->orWhere('programs.description', 'like', "%{$q}%");
             });
         }
 
+        // sort
         if ($sort === 'terkumpul_terbanyak') {
-            $query->orderByDesc('raised');
+            $query->orderByDesc('raised_calc');
         } else {
-            // default: terbaru
-            $query->orderByDesc('created_at');
+            $query->orderByDesc('programs.created_at');
         }
 
-        $programs = $query->paginate(9)->withQueryString();
+        $paginator = $query->paginate(9)->withQueryString();
 
-        return view('danapunia.index', compact('programs', 'search', 'sort'));
+        // ubah koleksi jadi array biar blade tetap $program['...']
+        $mapped = $paginator->getCollection()->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'slug' => $p->slug,
+                'title' => $p->title,
+                'category' => $p->category ?? 'lainnya',
+                'image' => $p->image ? $p->image : 'images/placeholder.jpg',
+                'banner' => $p->banner ? $p->banner : ($p->image ? $p->image : 'images/placeholder-banner.jpg'),
+                'target' => (int) ($p->target ?? 0),
+                'raised' => (int) ($p->raised_calc ?? 0),
+            ];
+        });
+
+        $paginator->setCollection($mapped);
+
+        return view('danapunia.index', [
+            'programs' => $paginator,
+        ]);
     }
 }

@@ -5,26 +5,47 @@ namespace App\Http\Controllers;
 use App\Models\Donation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
-
+use App\Models\Program;
 
 class DonasiController extends Controller
 {
     private function getProgram(string $slug): array
     {
-        $pc = app(ProgramController::class);
+        // 1) coba ambil dari seed() via ProgramController (yang kamu udah punya)
+        $pc = app(\App\Http\Controllers\ProgramController::class);
 
-        $program = $pc->findProgram($slug); // method ini ada di ProgramController
+        $program = null;
+        if (method_exists($pc, 'findProgram')) {
+            $program = $pc->findProgram($slug);
+        }
 
+        // 2) kalau tidak ketemu (biasanya program Dana Punia dari DB), ambil dari DATABASE
+        if (! $program) {
+            $p = Program::where('slug', $slug)->firstOrFail();
+
+            $program = [
+                'id' => $p->id,
+                'slug' => $p->slug,
+                'title' => $p->title,
+                'category' => $p->category ?? 'lainnya',
+                'image' => $p->image,
+                'banner' => $p->banner ?? $p->image,
+                'target' => (int) ($p->target ?? 0),
+                'raised' => (int) ($p->raised ?? 0),
+                'description' => $p->description,
+                'short_description' => $p->short_description,
+            ];
+        }
+
+        // 3) terakhir: kalau tetap kosong ya 404
         abort_unless($program, 404);
 
-        return $program; // array
+        return $program;
     }
 
     public function nominal(Request $request, string $slug)
     {
         $program = $this->getProgram($slug);
-
         $nominal = $request->input('nominal', 50000);
 
         return view('donasi.nominal', compact('program', 'nominal'));
@@ -33,7 +54,6 @@ class DonasiController extends Controller
     public function dataDiri(Request $request, string $slug)
     {
         $program = $this->getProgram($slug);
-
         $nominal = $request->input('nominal', 50000);
 
         return view('donasi.data-diri', compact('program', 'nominal'));
@@ -55,16 +75,13 @@ class DonasiController extends Controller
         ]);
 
         $isAnonymous = ((int) $data['is_anonymous']) === 1;
-
-        // Nama yang ditampilkan ke Midtrans
         $displayName = $isAnonymous ? 'Siapa Ya?' : $data['nama'];
 
-        // order id
         $orderId = 'DON-'.($program['id'] ?? 'X').'-'.Str::random(8);
 
         Donation::create([
             'user_id' => auth()->check() ? auth()->id() : null,
-            'program_id' => $program['id'] ?? null,
+            'program_id' => $program['id'],
             'donor_name' => $data['nama'],
             'is_anonymous' => $isAnonymous ? 1 : 0,
             'amount' => (int) $data['nominal'],
@@ -72,10 +89,8 @@ class DonasiController extends Controller
             'status' => 'success',
         ]);
 
-        // config midtrans
         $this->setMidtransConfig();
 
-        // parameter snap
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
@@ -88,86 +103,56 @@ class DonasiController extends Controller
             ],
             'item_details' => [
                 [
-                    'id' => $program['id'] ?? 0,
+                    'id' => $program['id'],
                     'price' => $data['nominal'],
                     'quantity' => 1,
-                    'name' => substr($program['title'] ?? 'Donasi', 0, 50),
+                    'name' => substr($program['title'], 0, 50),
                 ],
             ],
-            'custom_field1' => $program['id'] ?? null,
-            'custom_field2' => $program['title'] ?? null,
-            'custom_field3' => $data['payment_method'],
         ];
 
         $snapToken = \Midtrans\Snap::getSnapToken($params);
 
-        return view('donasi.bayar', [
-            'program' => $program,
-            'data' => $data,
-            'orderId' => $orderId,
-            'snapToken' => $snapToken,
-            'displayName' => $displayName,
-        ]);
+        return view('donasi.bayar', compact(
+            'program',
+            'data',
+            'orderId',
+            'snapToken',
+            'displayName'
+        ));
     }
 
-    public function prosesDonasi(Request $request, string $slug)
+    /**
+     * ❗ FIX 2: method ini sekarang AMAN
+     * Mengambil data dari session
+     */
+    public function pembayaran()
     {
-        $program = $this->getProgram($slug);
+        $program = session('donasi_program');
+        $data = session('donasi_data');
+        $snapToken = session('donasi_snap_token');
+        $orderId = session('donasi_order_id');
 
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'telepon' => 'required|string|max:30',
-            'email' => 'nullable|email',
-        ]);
-
-        $nominal = $request->input('nominal', 50000);
-        $paymentMethod = $request->input('payment_method');
-        $voucherCode = $request->input('voucher_code');
-
-        return redirect()
-            ->route('donasi.sukses')
-            ->with([
-                'program' => $program,
-                'nominal' => $nominal,
-                'paymentMethod' => $paymentMethod,
-                'voucherCode' => $voucherCode,
-                'donatur' => $validated,
-            ]);
-    }
-
-    public function pembayaran(/* parameter lain, misal $slug */)
-    {
-
-        session([
-            'donasi_program' => $program['title'] ?? ($program->title ?? null),
-            'donasi_nominal' => $data['nominal'] ?? null,
-        ]);
-
-        return view('donasi.pembayaran', [
-            'program' => $program,
-            'data' => $data,
-            'snapToken' => $snapToken,
-            'orderId' => $orderId ?? null,
-        ]);
+        return view('donasi.pembayaran', compact(
+            'program',
+            'data',
+            'snapToken',
+            'orderId'
+        ));
     }
 
     public function sukses(Request $request)
     {
-        $slug = $request->query('slug');              // slug program
-        $nominal = (int) $request->query('nominal', 0);  // jumlah donasi
+        $slug = $request->query('slug');
+        $nominal = (int) $request->query('nominal', 0);
 
-        // simpan delta donasi di session per slug
         if ($slug && $nominal > 0) {
             $overrides = session('donasi_overrides', []);
-            // simpan TAMBAHAN, bukan total final
             $overrides[$slug] = ($overrides[$slug] ?? 0) + $nominal;
             session(['donasi_overrides' => $overrides]);
         }
 
-        return view('donasi.sukses', [
-            'program' => $slug ?? 'Program Tidak Dikenal', // bisa nanti diganti title kalau mau lebih cakep
-            'nominal' => $nominal,
-        ]);
+        return view('donasi.sukses', compact('slug', 'nominal'));
     }
 
     protected function setMidtransConfig(): void

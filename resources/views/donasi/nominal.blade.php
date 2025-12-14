@@ -27,8 +27,10 @@
                 <div class="space-y-4">
                     <div class="flex items-start gap-4">
                         <div class="w-32 h-32 rounded-2xl overflow-hidden shadow-md bg-slate-200 flex-shrink-0">
-                            <img src="{{ $program['image'] ?? 'https://via.placeholder.com/300x300' }}"
-                                alt="{{ $program['title'] ?? 'Program Donasi' }}" class="w-full h-full object-cover">
+                            <img src="{{ !empty($program['image']) ? \Illuminate\Support\Facades\Storage::url($program['image']) : 'https://via.placeholder.com/600x400?text=Program' }}"
+                                alt="{{ $program['title'] ?? 'Program' }}" class="w-full h-full object-cover" />
+
+                            alt="{{ $program['title'] ?? 'Program Donasi' }}" class="w-full h-full object-cover">
                         </div>
 
                         <div class="flex-1">
@@ -45,13 +47,14 @@
                                 <span>DonasiKuy</span>
                                 <span class="w-1 h-1 rounded-full bg-slate-400"></span>
 
-                                @if (is_null($program['days_left']))
+                                @if (is_null($program['days_left'] ?? null))
                                     <span>Tanpa batas waktu</span>
-                                @elseif ($program['days_left'] === 0)
+                                @elseif (($program['days_left'] ?? null) === 0)
                                     <span>Berakhir hari ini</span>
                                 @else
-                                    <span>Sisa {{ $program['days_left'] }} hari</span>
+                                    <span>Sisa {{ $program['days_left'] ?? 0 }} hari</span>
                                 @endif
+
                             </div>
                         </div>
                     </div>

@@ -70,12 +70,13 @@
                                 </div>
 
                                 <div class="text-right">
-                                    <a href="{{ route('donasi.nominal', $program['slug']) }}"
+                                    <a href="{{ route('donasi.nominal', ['slug' => $program['slug']]) }}"
                                         class="px-2.5 py-1 rounded-md text-xs font-medium
-                              bg-emerald-50 border border-emerald-200 text-emerald-600
-                              hover:bg-emerald-100 transition">
+                                                bg-emerald-50 border border-emerald-200 text-emerald-600
+                                                 hover:bg-emerald-100 transition">
                                         Ubah
                                     </a>
+
 
                                     <p class="mt-1 text-sm font-bold text-slate-900">
                                         Rp

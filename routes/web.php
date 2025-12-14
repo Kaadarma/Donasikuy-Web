@@ -56,17 +56,11 @@ Route::get('/inspirasi', [NewsController::class, 'index'])->name('inspirasi.inde
 Route::get('/inspirasi/{slug}', [NewsController::class, 'show'])->name('inspirasi.show');
 
 
-// =====================
-// GALANG DANA
-// =====================
 
 Route::get('/galangdana', [GalangDanaController::class, 'create'])->name('galang.create');
 Route::get('/galangdana/kategori', [GalangDanaController::class, 'kategori'])->name('galang.kategori');
 
 
-// =====================
-// DONASI
-// =====================
 
 Route::middleware('auth')->group(function () {
     Route::get('/donasi/{slug}/nominal', [DonasiController::class, 'nominal'])->name('donasi.nominal');
