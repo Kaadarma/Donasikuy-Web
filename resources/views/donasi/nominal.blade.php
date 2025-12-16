@@ -1,6 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        use Illuminate\Support\Facades\Storage;
+        use Illuminate\Support\Str;
+
+        // aman untuk array / object (pakai data_get)
+        $title = data_get($program, 'title', 'Program Donasi');
+        $slug = data_get($program, 'slug');
+        $category = data_get($program, 'category', 'Program Kebaikan');
+        $daysLeft = data_get($program, 'days_left', null);
+
+        $raised = (int) data_get($program, 'raised', 0);
+        $target = (int) data_get($program, 'target', 0);
+        $percent = $target > 0 ? min(100, round(($raised / $target) * 100)) : 0;
+
+        // image handle:
+        $rawImage = data_get($program, 'image', null);
+        if (!empty($rawImage)) {
+            // kalau sudah URL, pakai langsung. kalau path storage, pakai Storage::url
+            $imageUrl = Str::startsWith($rawImage, ['http://', 'https://']) ? $rawImage : Storage::url($rawImage);
+        } else {
+            $imageUrl = 'https://via.placeholder.com/600x400?text=Program';
+        }
+    @endphp
+
     <div class="min-h-screen bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 py-10">
         <div class="max-w-6xl mx-auto px-4">
 
@@ -17,44 +41,36 @@
             </div>
 
             <div class="grid gap-8 lg:grid-cols-[1.1fr,1.1fr] items-start">
-                {{-- Info program --}}
-                @php
-                    $raised = $program['raised'] ?? 0;
-                    $target = $program['target'] ?? 0;
-                    $percent = $target > 0 ? min(100, round(($raised / $target) * 100)) : 0;
-                @endphp
 
+                {{-- Info program --}}
                 <div class="space-y-4">
                     <div class="flex items-start gap-4">
-                        <div class="w-32 h-32 rounded-2xl overflow-hidden shadow-md bg-slate-200 flex-shrink-0">
-                            <img src="{{ !empty($program['image']) ? \Illuminate\Support\Facades\Storage::url($program['image']) : 'https://via.placeholder.com/600x400?text=Program' }}"
-                                alt="{{ $program['title'] ?? 'Program' }}" class="w-full h-full object-cover" />
 
-                            alt="{{ $program['title'] ?? 'Program Donasi' }}" class="w-full h-full object-cover">
+                        <div class="w-32 h-32 rounded-2xl overflow-hidden shadow-md bg-slate-200 flex-shrink-0">
+                            <img src="{{ $imageUrl }}" alt="{{ $title }}" class="w-full h-full object-cover" />
                         </div>
 
                         <div class="flex-1">
                             <p
                                 class="inline-flex items-center text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full mb-2">
-                                {{ $program['category'] ?? 'Program Kebaikan' }}
+                                {{ $category }}
                             </p>
 
                             <h1 class="text-2xl md:text-3xl font-semibold text-slate-900 leading-snug">
-                                {{ $program['title'] }}
+                                {{ $title }}
                             </h1>
 
                             <div class="mt-3 flex items-center gap-2 text-sm text-slate-600">
                                 <span>DonasiKuy</span>
                                 <span class="w-1 h-1 rounded-full bg-slate-400"></span>
 
-                                @if (is_null($program['days_left'] ?? null))
+                                @if (is_null($daysLeft))
                                     <span>Tanpa batas waktu</span>
-                                @elseif (($program['days_left'] ?? null) === 0)
+                                @elseif ($daysLeft === 0)
                                     <span>Berakhir hari ini</span>
                                 @else
-                                    <span>Sisa {{ $program['days_left'] ?? 0 }} hari</span>
+                                    <span>Sisa {{ $daysLeft }} hari</span>
                                 @endif
-
                             </div>
                         </div>
                     </div>
@@ -82,12 +98,10 @@
                         </div>
 
                         <p class="text-xs text-slate-500">
-                            Setiap rupiah yang kamu titipkan membantu mereka yang sedang membutuhkan. 💚
+                            Setiap rupiah yang kamu titipkan membantu mereka yang sedang membutuhkan.
                         </p>
                     </div>
                 </div>
-
-
 
                 {{-- Card donasi --}}
                 <div>
@@ -100,9 +114,7 @@
                         </div>
 
                         {{-- Tombol preset --}}
-                        @php
-                            $presets = [30000, 50000, 75000, 100000];
-                        @endphp
+                        @php $presets = [30000, 50000, 75000, 100000]; @endphp
                         <div class="flex flex-wrap gap-3 mb-7">
                             @foreach ($presets as $amount)
                                 <button type="button" data-amount="{{ $amount }}"
@@ -116,7 +128,8 @@
                         </div>
 
                         {{-- Form nominal lainnya --}}
-                        <form action="{{ route('donasi.dataDiri', $program['slug']) }}" method="GET" class="space-y-6">
+                        <form id="donasiForm" action="{{ $slug ? route('donasi.dataDiri', $slug) : '#' }}" method="GET"
+                            class="space-y-6">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-900 mb-1.5">
                                     Nominal lainnya
@@ -126,23 +139,28 @@
                                         Rp
                                     </span>
                                     <input id="nominal" type="text" name="nominal"
-                                        value="{{ old('nominal', $nominal ?? 5000) }}" min="10000" step="1000"
+                                        value="{{ old('nominal', $nominal ?? 5000) }}"
                                         class="w-full px-3 py-2.5 text-sm outline-none text-slate-800 placeholder:text-slate-400">
                                 </div>
+                                @if (!$slug)
+                                    <p class="mt-2 text-xs text-red-500">
+                                        Slug program belum ada. Pastikan data program yang dikirim ke view sudah punya
+                                        <code>slug</code>.
+                                    </p>
+                                @endif
                             </div>
 
                             <div class="pt-2">
                                 <button type="submit"
                                     class="w-full py-3.5 rounded-2xl text-sm font-semibold
-                       bg-gradient-to-r from-emerald-600 via-green-500 to-lime-400
-                       text-white shadow-lg shadow-emerald-500/30
-                       hover:brightness-105 active:scale-[0.99] transition">
+                                           bg-gradient-to-r from-emerald-600 via-green-500 to-lime-400
+                                           text-white shadow-lg shadow-emerald-500/30
+                                           hover:brightness-105 active:scale-[0.99] transition">
                                     Selanjutnya
                                 </button>
                             </div>
                         </form>
 
-                        {{-- Catatan kecil --}}
                         <p class="mt-4 text-[11px] text-slate-400 text-center">
                             Dengan menekan “Selanjutnya”, kamu setuju bahwa donasi ini adalah amanah yang kamu titipkan
                             untuk disalurkan kepada penerima manfaat yang berhak.
@@ -154,43 +172,34 @@
         </div>
     </div>
 
-    {{-- Script kecil untuk sinkron tombol nominal preset ke input --}}
     <script>
         const nominalInput = document.getElementById('nominal');
         const donasiForm = document.getElementById('donasiForm');
 
-        // format angka ke format ribuan: 10000 -> 10.000
         function formatRupiah(value) {
-            const cleaned = value.replace(/\D/g, ""); // buang non angka
-            return cleaned.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // tambah titik
+            const cleaned = String(value).replace(/\D/g, "");
+            return cleaned.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
         if (nominalInput) {
-            // Format saat user ketik manual
             nominalInput.addEventListener("input", function() {
                 this.value = formatRupiah(this.value);
             });
         }
 
-        // sebelum submit, convert format 10.000 menjadi 10000
         if (donasiForm && nominalInput) {
             donasiForm.addEventListener('submit', function() {
-                nominalInput.value = nominalInput.value.replace(/\./g, "");
+                nominalInput.value = String(nominalInput.value).replace(/\./g, "");
             });
         }
 
-        // Tombol preset nominal
         document.querySelectorAll('.preset-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                const amount = this.dataset.amount; // misal "10000"
-                const input = document.getElementById('nominal');
+                const amount = this.dataset.amount;
+                if (!nominalInput) return;
 
-                if (!input) return;
+                nominalInput.value = formatRupiah(amount);
 
-                // set value + format tampilan
-                input.value = formatRupiah(amount);
-
-                // highlight tombol yang aktif
                 document.querySelectorAll('.preset-btn').forEach(b => {
                     b.classList.remove(
                         'ring-2', 'ring-emerald-400',
