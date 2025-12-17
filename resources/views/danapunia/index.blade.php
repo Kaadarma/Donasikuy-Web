@@ -202,8 +202,13 @@
                             $progress = $isUnlimited ? 0 : min(100, (int) round(($raised / max(1, $target)) * 100));
 
                             $img = $program['image'] ?? null;
-                            $imgSrc = $img ? asset($img) : 'https://via.placeholder.com/1200x800?text=Dana+Punia';
+                            $imgSrc = $img
+                                ? (Str::startsWith($img, ['http://', 'https://'])
+                                    ? $img
+                                    : asset($img))
+                                : 'https://via.placeholder.com/1200x800?text=Dana+Punia';
                         @endphp
+
 
                         {{-- CARD PROGRAM (compact) --}}
                         <a href="{{ route('programs.show', $program['slug']) }}"
@@ -271,7 +276,7 @@
 
                                         <div class="text-[11px] text-slate-500 flex justify-between">
                                             <span>{{ $progress }}% tercapai</span>
-                                       
+
                                         </div>
                                     @endif
                                 </div>

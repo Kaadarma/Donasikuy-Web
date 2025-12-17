@@ -3,15 +3,47 @@
 namespace App\Http\Controllers;
 
 use App\Models\Donation;
+use App\Models\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Models\Program;
 
 class DonasiController extends Controller
 {
+    private function resolveImage(?string $path): string
+    {
+        $fallback = 'https://via.placeholder.com/1200x675?text=Program';
+
+        if (! $path) {
+            return $fallback;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (Str::startsWith($path, 'public/images/')) {
+            return asset(Str::after($path, 'public/'));
+        }
+
+        if (Str::startsWith($path, 'images/')) {
+            return asset($path);
+        }
+
+        if (file_exists(public_path('images/' . $path))) {
+            return asset('images/' . $path);
+        }
+
+        if (Str::startsWith($path, ['uploads/', 'img/'])) {
+            return asset($path);
+        }
+
+        return $fallback;
+    }
+
     private function getProgram(string $slug): array
     {
-        // 1) coba ambil dari seed() via ProgramController (yang kamu udah punya)
         $pc = app(\App\Http\Controllers\ProgramController::class);
 
         $program = null;
@@ -19,7 +51,6 @@ class DonasiController extends Controller
             $program = $pc->findProgram($slug);
         }
 
-        // 2) kalau tidak ketemu (biasanya program Dana Punia dari DB), ambil dari DATABASE
         if (! $program) {
             $p = Program::where('slug', $slug)->firstOrFail();
 
@@ -37,8 +68,10 @@ class DonasiController extends Controller
             ];
         }
 
-        // 3) terakhir: kalau tetap kosong ya 404
         abort_unless($program, 404);
+
+        $program['image'] = $this->resolveImage($program['image'] ?? null);
+        $program['banner'] = $this->resolveImage($program['banner'] ?? ($program['image'] ?? null));
 
         return $program;
     }
@@ -77,7 +110,7 @@ class DonasiController extends Controller
         $isAnonymous = ((int) $data['is_anonymous']) === 1;
         $displayName = $isAnonymous ? 'Siapa Ya?' : $data['nama'];
 
-        $orderId = 'DON-'.($program['id'] ?? 'X').'-'.Str::random(8);
+        $orderId = 'DON-' . ($program['id'] ?? 'X') . '-' . Str::random(8);
 
         Donation::create([
             'user_id' => auth()->check() ? auth()->id() : null,
@@ -88,6 +121,10 @@ class DonasiController extends Controller
             'message' => $data['pesan'] ?? null,
             'status' => 'success',
         ]);
+
+        if (!empty($program['id'])) {
+            Program::where('id', $program['id'])->increment('raised', (int) $data['nominal']);
+        }
 
         $this->setMidtransConfig();
 
@@ -122,10 +159,6 @@ class DonasiController extends Controller
         ));
     }
 
-    /**
-     * ❗ FIX 2: method ini sekarang AMAN
-     * Mengambil data dari session
-     */
     public function pembayaran()
     {
         $program = session('donasi_program');
