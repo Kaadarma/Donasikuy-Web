@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 @section('title', 'Galang Dana')
 
 @section('content')
@@ -18,6 +19,10 @@
 
         {{-- FORM PILIH KATEGORI --}}
         <div class="space-y-4">
+                <div id="jenisError"
+                    class="hidden rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    Silakan pilih jenis galang dana terlebih dahulu.
+                </div>
 
             {{-- Pilihan 1: Galang Dana Medis --}}
             <label class="block cursor-pointer">
@@ -73,7 +78,7 @@
                     </div>
                 </div>
             </label>
-
+            
             {{-- Tombol Lanjut --}}
             <div class="pt-2">
                 <button id="btnLanjut"
@@ -97,20 +102,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const selected = document.querySelector('input[name="kategori_galang"]:checked');
 
+        const errBox = document.getElementById('jenisError');
+
         if (!selected) {
-            alert("Silakan pilih jenis galang dana terlebih dahulu.");
+            errBox?.classList.remove('hidden');
             return;
+        } else {
+            errBox?.classList.add('hidden');
         }
 
 
         console.log("Kategori terpilih:", selected.value);
 
         if (selected.value === 'lainnya') {
-            window.location.href = "{{ route('galang.kategori') }}";
+            window.location.href = "{{ route('galang.form') }}" + "?jenis=" + selected.value;
         } else if (selected.value === 'medis') {
-            // ini buat ngarahin galangan medis 
-            window.location.href = "{{ route('galang.kategori') }}";
+            window.location.href = "{{ route('galang.form') }}" + "?jenis=medis";
         }
+
     });
 });
 </script>

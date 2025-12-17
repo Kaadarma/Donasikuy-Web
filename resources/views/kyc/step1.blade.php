@@ -1,4 +1,6 @@
-@extends('layouts.dashboard') {{-- sesuaikan dengan layout punyamu --}}
+@extends('layouts.app')
+
+@section('authpage', true)
 
 @section('title', 'Verifikasi Akun')
 
