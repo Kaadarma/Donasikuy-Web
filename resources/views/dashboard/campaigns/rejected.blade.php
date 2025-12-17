@@ -7,7 +7,19 @@
     <div>
         <h1 class="text-2xl font-bold text-slate-900">Ditolak</h1>
         <p class="mt-2 text-slate-600">Campaign yang ditolak admin. Kamu bisa perbaiki dan ajukan ulang.</p>
+
+        
     </div>
+
+    <div class="flex justify-end gap-2">
+        <a href="{{ route('dashboard.campaigns.index') }}"
+        class="rounded-full border border-slate-200 bg-white px-6 py-2.5
+                text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            ← Kembali
+        </a>
+    </div>
+
+
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @forelse($rejected as $p)

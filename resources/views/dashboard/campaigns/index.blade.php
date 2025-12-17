@@ -20,6 +20,9 @@
             + Buat Galang Dana
         </a>
     </div>
+        
+    {{-- Quick stats --}}
+
 
     {{-- Quick nav (sementara, sebelum sidebar dropdown dibuat) --}}
     <div class="flex flex-wrap gap-2">
@@ -33,9 +36,14 @@
         </a>
         <a href="{{ route('dashboard.campaigns.drafts') }}"
            class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-            Draft / Ditolak
+            Draft
+        </a>
+        <a href="{{ route('dashboard.campaigns.rejected') }}"
+           class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            Ditolak
         </a>
     </div>
+
 
     {{-- SECTION: Running --}}
     <section class="space-y-4">
@@ -83,7 +91,7 @@
         @endif
     </section>
 
-{{-- SECTION: Draft --}}
+
 {{-- SECTION: Draft --}}
 <div class="mb-10">
     <div class="flex items-center justify-between mb-4">
@@ -100,7 +108,7 @@
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             @foreach($drafts as $p)
-                @include('dashboard.campaigns.partials.card_v2', ['p' => $p])
+                @include('dashboard.campaigns.partials.card', ['p' => $p])
             @endforeach
         </div>
 
@@ -126,7 +134,7 @@
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             @foreach($rejected as $p)
-                @include('dashboard.campaigns.partials.card_v2', ['p' => $p])
+                @include('dashboard.campaigns.partials.card', ['p' => $p])
             @endforeach
         </div>
 

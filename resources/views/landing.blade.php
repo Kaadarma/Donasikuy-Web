@@ -360,59 +360,59 @@
         <h2 class="text-2xl md:text-3xl font-semibold text-slate-900">Inspirasi</h2>
         <p class="mt-1 text-slate-500">Artikel & kisah terbaru dari para relawan dan donatur.</p>
 
-        <ul class="mt-6 divide-y divide-slate-200">
+        {{-- LIST tapi CARD KOTAK --}}
+        <ul class="mt-6 space-y-4">
             @foreach ($posts as $post)
-                @php
-                    $hasSlug = isset($post['slug']) && $post['slug'];
-                    $href = $hasSlug
-                        ? route('inspirasi.show', $post['slug'])
-                        : $post['url'] ?? route('inspirasi.index');
+                <li>
+                    <a href="{{ $post['url'] }}"
+                    class="group flex items-start gap-4 md:gap-6 bg-white rounded-2xl
+                            border border-slate-200 shadow-sm hover:shadow-md transition
+                            p-4 md:p-5">
 
-                    $img = $post['image'] ?? asset('images/default-inspirasi.jpg');
-                    $title = $post['title'] ?? 'Inspirasi';
-                    $date = $post['date'] ?? '';
-                    $excerpt = $post['excerpt'] ?? '';
-                @endphp
-
-                <li class="py-5">
-                    <a href="{{ $href }}" class="group flex items-start gap-4 md:gap-6">
-                        <div class="relative shrink-0 w-28 h-20 md:w-40 md:h-28 overflow-hidden rounded-lg bg-slate-100">
-                            <img src="{{ $img }}" alt="{{ $title }}"
+                        {{-- IMAGE --}}
+                        <div class="relative shrink-0 w-28 h-20 md:w-40 md:h-28 overflow-hidden rounded-xl bg-slate-100">
+                            <img src="{{ $post['image'] }}" alt="{{ $post['title'] }}"
                                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
                         </div>
 
-                        <div class="min-w-0">
-                            <h3
-                                class="text-base md:text-lg font-semibold text-slate-900 leading-snug group-hover:text-emerald-700 line-clamp-2">
-                                {{ $title }}
+                        {{-- CONTENT --}}
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-base md:text-lg font-semibold text-slate-900 leading-snug group-hover:text-emerald-700 line-clamp-2">
+                                {{ $post['title'] }}
                             </h3>
 
                             <div class="mt-1 text-xs md:text-sm text-slate-500">
-                                {{ $date }}
+                                {{ $post['date'] }}
                             </div>
 
-                            @if (!empty($excerpt))
+                            @if (!empty($post['excerpt']))
                                 <p class="mt-2 text-sm text-slate-600 line-clamp-2">
-                                    {{ $excerpt }}
+                                    {{ $post['excerpt'] }}
                                 </p>
                             @endif
+
+                            <div class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 group-hover:text-emerald-700">
+                                Baca selengkapnya
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                     </a>
                 </li>
             @endforeach
-
-
         </ul>
 
-        {{-- Tombol minimalis "Lihat Inspirasi Lainnya" --}}
+        {{-- Tombol --}}
         <div class="mt-8 flex justify-center">
             <a href="{{ route('inspirasi.index') }}"
-                class="inline-flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700 transition">
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold
+                    bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 transition">
                 Lihat Inspirasi Lainnya
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </path>
                 </svg>
             </a>
         </div>

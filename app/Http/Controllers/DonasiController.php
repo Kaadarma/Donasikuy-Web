@@ -176,16 +176,41 @@ class DonasiController extends Controller
 
     public function sukses(Request $request)
     {
+      
+        $orderId = $request->query('order_id');
+
+        if ($orderId) {
+            $donation = Donation::with('program')
+                ->where('order_id', $orderId)
+                ->firstOrFail();
+
+            // program array kamu (biar konsisten sama getProgram)
+            $program = $donation->program ? [
+                'id' => $donation->program->id,
+                'slug' => $donation->program->slug,
+                'title' => $donation->program->title,
+                'image' => $this->resolveImage($donation->program->image),
+                'target' => (int) ($donation->program->target ?? 0),
+                'raised' => (int) ($donation->program->raised ?? 0),
+            ] : null;
+
+            $nominal = (int) $donation->amount;
+
+            return view('donasi.sukses', [
+                'donation' => $donation,
+                'program' => $program,
+                'nominal' => $nominal,
+                'orderId' => $orderId,
+            ]);
+        }
+
+        // fallback lama kalau order_id gak ada
         $slug = $request->query('slug');
         $nominal = (int) $request->query('nominal', 0);
 
-        if ($slug && $nominal > 0) {
-            $overrides = session('donasi_overrides', []);
-            $overrides[$slug] = ($overrides[$slug] ?? 0) + $nominal;
-            session(['donasi_overrides' => $overrides]);
-        }
+        $program = $slug ? $this->getProgram($slug) : null;
 
-        return view('donasi.sukses', compact('slug', 'nominal'));
+        return view('donasi.sukses', compact('program', 'nominal', 'slug'));
     }
 
     protected function setMidtransConfig(): void
@@ -195,4 +220,6 @@ class DonasiController extends Controller
         \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
         \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
     }
+
+    
 }

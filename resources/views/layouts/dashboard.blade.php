@@ -55,15 +55,17 @@
                 <i class="bi bi-calendar-event text-base"></i>
                 <span>Event</span>
             </a>
-
-            <a href="#"
-               class="flex items-center gap-3 px-6 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent">
+            
+            <a href="{{ route('dashboard.donations.index') }}"
+            class="flex items-center gap-3 px-6 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent">
                 <i class="bi bi-clock-history text-base"></i>
                 <span>Riwayat Donasi</span>
             </a>
 
-            <a href="#"
-               class="flex items-center gap-3 px-6 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent">
+
+            <a href="{{ route('dashboard.disbursements.index') }}"
+            class="flex items-center gap-3 px-6 py-2.5 border-l-4
+                    {{ request()->routeIs('dashboard.disbursements.*') ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-medium' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                 <i class="bi bi-arrow-up-right-square text-base"></i>
                 <span>Pencairan Dana</span>
             </a>
@@ -117,6 +119,12 @@
 
         {{-- MAIN CONTENT --}}
         <main class="flex-1 px-4 md:px-8 py-6 space-y-6">
+            @if(session('success'))
+                <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+                    {{ session('success') }}
+                </div>
+                @endif
+
             @yield('content')
         </main>
 

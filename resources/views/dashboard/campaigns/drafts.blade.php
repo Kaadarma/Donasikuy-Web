@@ -7,7 +7,7 @@
 
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Draft / Ditolak</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Draft</h1>
             <p class="mt-2 text-slate-600">
                 Draft bisa kamu edit. Jika ditolak, edit lalu ajukan ulang (nanti kita bikin tombol “Ajukan”).
             </p>

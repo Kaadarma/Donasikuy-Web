@@ -14,6 +14,9 @@ class Program extends Model
     const STATUS_COMPLETED = 'completed';
     const STATUS_EXPIRED   = 'expired';
     const STATUS_SUSPENDED = 'suspended';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'user_id',
         'title',
@@ -92,5 +95,16 @@ class Program extends Model
             self::STATUS_RUNNING,
         ]);
     }
+
+    public function updates()
+    {
+        return $this->hasMany(\App\Models\CampaignUpdate::class, 'program_id');
+    }
+
+    public function disbursements()
+    {
+        return $this->hasMany(\App\Models\DisbursementRequest::class, 'program_id');
+    }
+
 
 }

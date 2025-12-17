@@ -49,17 +49,30 @@ Route::middleware('auth')->group(function () {
         ->name('profile.update');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard.index');
+// =====================
+// DASHBOARD (UTAMA)
+// =====================
+Route::middleware('auth')->get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard.index');
+    
 
+Route::middleware('auth')
+    ->prefix('dashboard')
+    ->name('dashboard.')
+    ->group(function () {
+        Route::get('/donations', [DashboardController::class, 'donationsIndex'])
+            ->name('donations.index');
+    });
+   
 
 // =====================
 // PROGRAM DONASI
 // =====================
+Route::get('/programs', [ProgramController::class, 'index'])
+    ->name('programs.index');
 
-Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
-Route::get('/programs/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');
+Route::get('/programs/{idOrSlug}', [ProgramController::class, 'show'])
+    ->name('programs.show');
 
 Route::get('/search', [ProgramController::class, 'search'])
     ->name('program.search');
@@ -80,6 +93,7 @@ Route::middleware(['auth', 'kyc.verified'])
     ->prefix('galang-dana')
     ->name('galang.')
     ->group(function () {
+
         Route::get('/create', [GalangDanaController::class, 'create'])
             ->name('create');
 
@@ -122,7 +136,7 @@ Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
     ->name('auth.google.callback');
 
-//dashboard
+
 // =====================
 // DASHBOARD CAMPAIGNS
 // =====================
@@ -131,32 +145,60 @@ Route::middleware(['auth', 'kyc.verified'])
     ->name('dashboard.campaigns.')
     ->group(function () {
 
-        // MASTER (ringkasan semua status kecuali history)
-        Route::get('/', [DashboardController::class, 'campaignsIndex'])->name('index');
+        // MASTER (ringkasan semua status)
+        Route::get('/', [DashboardController::class, 'campaignsIndex'])
+            ->name('index');
 
         // SUB LIST
-        Route::get('/running',  [DashboardController::class, 'campaignsRunning'])->name('running');
-        Route::get('/review',   [DashboardController::class, 'campaignsReview'])->name('review');
-        Route::get('/drafts',   [DashboardController::class, 'campaignsDrafts'])->name('drafts');
-        Route::get('/rejected', [DashboardController::class, 'campaignsRejected'])->name('rejected'); // opsional tapi enak
+        Route::get('/running',  [DashboardController::class, 'campaignsRunning'])
+            ->name('running');
 
-        // DETAIL (read-only, untuk lihat detail review / detail campaign)
-        Route::get('/{program}', [DashboardController::class, 'campaignShow'])->name('show');
+        Route::get('/review',   [DashboardController::class, 'campaignsReview'])
+            ->name('review');
 
+        Route::get('/drafts',   [DashboardController::class, 'campaignsDrafts'])
+            ->name('drafts');
+
+        Route::get('/rejected', [DashboardController::class, 'campaignsRejected'])
+            ->name('rejected');
+
+        // batalkan draft
+        Route::delete('/{program}', [DashboardController::class, 'campaignDestroy'])->name('destroy');
+    
         // EDIT (khusus draft & rejected)
-        Route::get('/{program}/edit', [DashboardController::class, 'campaignEdit'])->name('edit');
-        Route::put('/{program}',      [DashboardController::class, 'campaignUpdate'])->name('update');
+        Route::get('/{program}/edit', [DashboardController::class, 'campaignEdit'])
+            ->name('edit');
+
+        Route::put('/{program}', [DashboardController::class, 'campaignUpdate'])
+            ->name('update');
 
         // SUBMIT ke admin (ubah status -> pending)
-        Route::post('/{program}/submit', [DashboardController::class, 'campaignSubmit'])->name('submit');
+        Route::post('/{program}/submit', [DashboardController::class, 'campaignSubmit'])
+            ->name('submit');
 
         // MANAGE (khusus running/approved)
+        Route::get('/{program}/manage', [DashboardController::class, 'campaignManage'])
+            ->name('manage');
+
+        // OPTIONAL: page "draft tersimpan"
+        Route::get('/{program}/saved', [DashboardController::class, 'campaignSaved'])
+            ->name('saved');
+
+        // DETAIL (read-only) — TARUH PALING BAWAH (biar gak nabrak route di atas)
+        Route::get('/{program}', [DashboardController::class, 'campaignShow'])
+            ->whereNumber('program')
+            ->name('show');
+
+        
         Route::get('/{program}/manage', [DashboardController::class, 'campaignManage'])->name('manage');
 
-        // OPTIONAL: page "draft tersimpan" (habis simpan dari galang-dana/form)
-        Route::get('/{program}/saved', [DashboardController::class, 'campaignSaved'])->name('saved');
-    });
+        Route::post('/{program}/updates', [DashboardController::class, 'campaignStoreUpdate'])->name('updates.store');
+        Route::delete('/{program}/updates/{update}', [DashboardController::class, 'campaignUpdateDestroy'])->name('updates.destroy');
 
+        Route::post('/{program}/disbursements', [DashboardController::class, 'campaignStoreDisbursement'])->name('disbursements.store');
+
+
+    });
 
 
 
@@ -283,3 +325,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/email/resend', [ProfileController::class, 'resendNewEmail'])
         ->name('profile.email.resend');
 });
+
+// Pencairan Dana
+Route::middleware(['auth','kyc.verified'])
+    ->prefix('dashboard/disbursements')
+    ->name('dashboard.disbursements.')
+    ->group(function () {
+        Route::get('/', [DashboardController::class, 'disbursementsIndex'])->name('index');
+        Route::post('/{program}/request', [DashboardController::class, 'campaignStoreDisbursement'])->name('request');
+        
+    });
+
+    Route::post('/dashboard/campaigns/{program}/disbursements/{disbursement}/items', 
+    [DashboardController::class, 'disbursementItemStore']
+)->name('dashboard.disbursements.items.store');
+
