@@ -144,3 +144,30 @@ Route::middleware('auth')->get('/kyc-required', function () {
 Route::post('/donasi/{program:slug}/proses', [DonasiController::class, 'proses'])->name('donasi.proses');
 Route::get('/pembayaran/{kode}', [PembayaranController::class, 'show']) ->name('pembayaran.show');
 
+//Email 
+Route::get('/register/notice', function () {
+    return view('auth.register-notice');
+})->name('register.notice');
+
+Route::get('/register/verify/{token}', [AuthController::class, 'verifyPreRegister'])
+    ->name('preregister.verify');
+
+// kirim ulang email
+Route::post('/register/resend', [AuthController::class, 'resendPreRegister'])
+    ->name('preregister.resend');
+ 
+// balik ke register di halaman notice
+Route::get('/register/notice', function () {
+    //  TARUH DI SINI
+    if (!session()->has('preregister_email')) {
+        return redirect()->route('register');
+    }
+
+    // optional guard tambahan
+    if (auth()->check()) {
+        return redirect()->route('landing');
+    }
+
+    return view('auth.register-notice');
+})->name('register.notice');
+

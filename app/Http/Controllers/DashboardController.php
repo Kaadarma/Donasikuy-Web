@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Donation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Donasi; // pastikan file Donasi.php ada di app/Models
@@ -23,9 +24,9 @@ class DashboardController extends Controller
         // 1. TOTAL DONASI USER INI
         // =========================
         // pakai kolom: id_user, status_donasi, jumlah_donasi
-        $totalDonasi = Donasi::where('id_user', $user->id)
-            ->where('status_donasi', 'success')
-            ->sum('jumlah_donasi');
+        $totalDonasi = Donation::where('user_id', $user->id)
+            ->where('status', 'success')
+            ->sum('amount');
 
         // =========================
         // 2. KARTU LAIN (sementara 0 dulu)
@@ -44,10 +45,10 @@ class DashboardController extends Controller
             ->map(function ($i) use ($user) {
                 $date = now()->subDays($i)->startOfDay();
 
-                $amount = Donasi::where('id_user', $user->id)
-                    ->where('status_donasi', 'success')
+                $amount = Donation::where('user_id', $user->id)
+                    ->where('status', 'success')
                     ->whereDate('created_at', $date)
-                    ->sum('jumlah_donasi');
+                    ->sum('amount');
 
                 return [
                     'date'   => $date->toDateString(), // contoh: 2025-12-03
