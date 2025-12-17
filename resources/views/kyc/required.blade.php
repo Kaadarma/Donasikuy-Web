@@ -1,4 +1,6 @@
-@extends('layouts.dashboard')
+@extends('layouts.app')
+
+@section('authpage', true)
 
 @section('title', 'Verifikasi Diperlukan')
 

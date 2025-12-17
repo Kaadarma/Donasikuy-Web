@@ -6,7 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Program extends Model
 {
+    const STATUS_DRAFT     = 'draft';
+    const STATUS_PENDING   = 'pending';
+    const STATUS_APPROVED  = 'approved';
+    const STATUS_REJECTED  = 'rejected';
+    const STATUS_RUNNING   = 'running';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_EXPIRED   = 'expired';
+    const STATUS_SUSPENDED = 'suspended';
     protected $fillable = [
+        'user_id',
         'title',
         'description',
         'short_description',
@@ -14,6 +23,9 @@ class Program extends Model
         'target',
         'category',
         'slug',
+        'deadline',
+        'status',
+        'is_active',
     ];
 
     public function donations()
@@ -54,4 +66,31 @@ class Program extends Model
             (int) round(($this->raised / max(1, $this->target)) * 100)
         );
     }
+
+    public function isDraft()
+    {
+        return $this->status === self::STATUS_DRAFT;
+    }
+
+    public function isPending()
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isApproved()
+    {
+        return in_array($this->status, [
+            self::STATUS_APPROVED,
+            self::STATUS_RUNNING,
+        ]);
+    }
+
+    public function isActive()
+    {
+        return in_array($this->status, [
+            self::STATUS_APPROVED,
+            self::STATUS_RUNNING,
+        ]);
+    }
+
 }
