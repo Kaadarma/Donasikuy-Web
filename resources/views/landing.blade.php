@@ -97,19 +97,6 @@
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
 
-        {{-- Tombol Back --}}
-        <div class="flex items-center mb-4">
-            <button onclick="window.history.back()"
-                class="inline-flex items-center gap-2 text-sm font-medium text-slate-600
-                   hover:text-emerald-600 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-                Kembali
-            </button>
-        </div>
-
         <h2 class="text-center text-2xl md:text-3xl font-semibold mt-6">
             Program Pilihan Kami
         </h2>
