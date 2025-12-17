@@ -49,9 +49,9 @@ Route::middleware('auth')->group(function () {
         ->name('profile.update');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard.index');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard.index');
+
 
 
 // =====================
