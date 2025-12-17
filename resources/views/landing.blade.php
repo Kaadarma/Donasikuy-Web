@@ -96,7 +96,24 @@
     </div>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-        <h2 class="text-center text-2xl md:text-3xl font-semibold mt-20">Program Pilihan Kami</h2>
+
+        {{-- Tombol Back --}}
+        <div class="flex items-center mb-4">
+            <button onclick="window.history.back()"
+                class="inline-flex items-center gap-2 text-sm font-medium text-slate-600
+                   hover:text-emerald-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Kembali
+            </button>
+        </div>
+
+        <h2 class="text-center text-2xl md:text-3xl font-semibold mt-6">
+            Program Pilihan Kami
+        </h2>
+
         <div class="relative rounded-t-xl pt-12 pb-8 mt-12">
             <div class="absolute -top-25 left-1/2 -translate-x-1/2 w-full flex justify-center gap-6">
 
@@ -151,8 +168,7 @@
                                      @elseif($p['status'] === 'Berakhir Hari Ini')
                                         bg-orange-100 text-orange-700
                                      @else
-                                        bg-emerald-50 text-emerald-700 @endif
-                        ">
+                                        bg-emerald-50 text-emerald-700 @endif ">
                                                 {{ $p['status'] }}
                                             </span>
                                         @endif
@@ -360,48 +376,56 @@
         <h2 class="text-2xl md:text-3xl font-semibold text-slate-900">Inspirasi</h2>
         <p class="mt-1 text-slate-500">Artikel & kisah terbaru dari para relawan dan donatur.</p>
 
-        <ul class="mt-6 divide-y divide-slate-200">
+        <ul class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             @foreach ($posts as $post)
                 @php
-                    $hasSlug = isset($post['slug']) && $post['slug'];
-                    $href = $hasSlug
-                        ? route('inspirasi.show', $post['slug'])
-                        : $post['url'] ?? route('inspirasi.index');
-
+                    $href = route('inspirasi.show', $post['slug']);
                     $img = $post['image'] ?? asset('images/default-inspirasi.jpg');
-                    $title = $post['title'] ?? 'Inspirasi';
-                    $date = $post['date'] ?? '';
-                    $excerpt = $post['excerpt'] ?? '';
                 @endphp
 
-                <li class="py-5">
-                    <a href="{{ $href }}" class="group flex items-start gap-4 md:gap-6">
-                        <div class="relative shrink-0 w-28 h-20 md:w-40 md:h-28 overflow-hidden rounded-lg bg-slate-100">
-                            <img src="{{ $img }}" alt="{{ $title }}"
-                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                <li>
+                    <a href="{{ $href }}"
+                        class="group flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white
+                      hover:border-emerald-500 hover:shadow-md transition
+                      focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+
+                        <div class="w-20 h-16 md:w-24 md:h-18 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                            <img src="{{ $img }}" alt="{{ $post['title'] ?? 'Inspirasi' }}"
+                                class="w-full h-full object-cover group-hover:scale-105 transition">
                         </div>
 
-                        <div class="min-w-0">
-                            <h3
-                                class="text-base md:text-lg font-semibold text-slate-900 leading-snug group-hover:text-emerald-700 line-clamp-2">
-                                {{ $title }}
-                            </h3>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-3">
+                                <h3
+                                    class="text-sm md:text-base font-semibold text-slate-900 leading-snug line-clamp-2 break-words">
+                                    {{ $post['title'] ?? '-' }}
+                                </h3>
 
-                            <div class="mt-1 text-xs md:text-sm text-slate-500">
-                                {{ $date }}
+                                <span
+                                    class="shrink-0 w-9 h-9 rounded-xl border border-slate-200 bg-slate-50
+                                     grid place-items-center group-hover:border-emerald-500 group-hover:bg-emerald-50 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-emerald-700" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </span>
                             </div>
 
-                            @if (!empty($excerpt))
+                            <div class="mt-1 text-xs text-slate-500">
+                                {{ $post['date'] ?? '' }}
+                            </div>
+
+                            @if (!empty($post['excerpt']))
                                 <p class="mt-2 text-sm text-slate-600 line-clamp-2">
-                                    {{ $excerpt }}
+                                    {{ $post['excerpt'] }}
                                 </p>
                             @endif
                         </div>
                     </a>
                 </li>
             @endforeach
-
-
         </ul>
 
         {{-- Tombol minimalis "Lihat Inspirasi Lainnya" --}}
