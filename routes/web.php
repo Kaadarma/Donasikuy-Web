@@ -13,6 +13,9 @@ use App\Http\Controllers\KycController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DanaPuniaController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminKycController;
 
 Route::get('/', [LandingController::class, 'index'])
     ->name('landing');
@@ -197,16 +200,16 @@ Route::middleware('auth')->group(function () {
 // =====================
 // FORGOT PASSWORD
 // =====================
-Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])
-    ->name('password.request');
+    Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])
+        ->name('password.request');
 
-Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
-    ->name('password.email');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
+        ->name('password.email');
 
-Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])
-    ->name('password.reset');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])
+        ->name('password.reset');
 
-Route::post('/reset-password', [AuthController::class, 'updatePassword'])
+    Route::post('/reset-password', [AuthController::class, 'updatePassword'])
     ->name('password.update');
 
 // =====================
@@ -219,7 +222,7 @@ Route::middleware(['auth', 'kyc.verified'])->group(function () {
     Route::get('/galang-dana/kategori', [GalangDanaController::class, 'kategori'])
         ->name('galang.kategori');
 });
-
+    
 // =====================
 // DANA PUNIA
 // =====================
@@ -283,3 +286,38 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/email/resend', [ProfileController::class, 'resendNewEmail'])
         ->name('profile.email.resend');
 });
+
+// =====================
+// ADMIN
+// =====================
+
+Route::prefix('admin')->group(function () {
+
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])
+        ->name('admin.login');
+
+    Route::post('/login', [AdminAuthController::class, 'login'])
+        ->name('admin.login.submit');
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+            ->name('admin.dashboard');
+
+        Route::post('/logout', [AdminAuthController::class, 'logout'])
+            ->name('admin.logout');
+        
+        Route::get('/kyc', [AdminKycController::class, 'index'])
+            ->name('admin.kyc.index');
+
+        Route::get('/kyc/{kyc}', [AdminKycController::class, 'show'])
+            ->name('admin.kyc.show');
+
+        Route::post('kyc/{kyc}/approve', [AdminKycController::class, 'approve'])
+            ->name('admin.kyc.approve');
+
+        Route::post('kyc/{kyc}/reject', [AdminKycController::class, 'reject'])
+            ->name('admin.kyc.reject');
+    });
+
+});
+
