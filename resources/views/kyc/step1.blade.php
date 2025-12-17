@@ -119,6 +119,7 @@
                                 placeholder="contoh: Jl. Nangka No. 123, Denpasar, Bali">{{ old('entity_address', $kyc['entity_address'] ?? '') }}</textarea>
                         </div>
 
+                        
                         {{-- Tombol Lanjut --}}
                         <div class="pt-4 border-t border-slate-200 flex justify-end">
                             <button type="submit"

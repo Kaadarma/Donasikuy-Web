@@ -46,6 +46,12 @@ class GoogleController extends Controller
                     'avatar' => $googleUser->getAvatar(),
                 ]);
             }
+
+            if (is_null($user->email_verified_at)) {
+                $user->email_verified_at = now();
+                $user->save();
+            }
+
         }
 
         // Login user
