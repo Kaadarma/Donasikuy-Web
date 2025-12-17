@@ -53,14 +53,13 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard.index');
 
+
 // =====================
 // PROGRAM DONASI
 // =====================
-Route::get('/programs', [ProgramController::class, 'index'])
-    ->name('programs.index');
 
-Route::get('/programs/{idOrSlug}', [ProgramController::class, 'show'])
-    ->name('programs.show');
+Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
+Route::get('/programs/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');
 
 Route::get('/search', [ProgramController::class, 'search'])
     ->name('program.search');
