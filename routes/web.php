@@ -171,3 +171,18 @@ Route::get('/register/notice', function () {
     return view('auth.register-notice');
 })->name('register.notice');
 
+// Edit Profile
+Route::middleware('auth')->group(function () {
+    Route::get('/profile/email/notice', function () {
+        // hanya bisa diakses jika barusan request ganti email
+        if (!session()->has('pending_new_email')) return redirect()->route('profile');
+        return view('profile.email-notice');
+    })->name('profile.email.notice');
+
+    Route::get('/profile/email/verify/{token}', [ProfileController::class, 'verifyNewEmail'])
+        ->name('profile.email.verify');
+
+    Route::post('/profile/email/resend', [ProfileController::class, 'resendNewEmail'])
+        ->name('profile.email.resend');
+});
+

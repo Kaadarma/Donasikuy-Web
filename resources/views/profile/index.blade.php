@@ -26,9 +26,10 @@
                         {{ $user->name }}
                     </h2>
                     <p class="text-xs text-emerald-100">
-                        {{ $user->email }}<br>
-                        {{-- sementara dummy, nanti bisa diganti no. HP user --}}
-                        0817 8654 3222
+                        {{ $user->email }}
+                        @if ($user->phone)
+                            <br>{{ $user->phone }}
+                        @endif
                     </p>
                 </div>
             </div>

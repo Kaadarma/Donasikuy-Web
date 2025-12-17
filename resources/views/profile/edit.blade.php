@@ -17,24 +17,36 @@
             <div class="flex items-center gap-4">
                 <div class="h-16 w-16 rounded-full overflow-hidden border bg-slate-100">
                     <img
+                        id="avatarPreview"
                         src="{{ $user->foto_profil ? asset('storage/' . $user->foto_profil) : asset('images/humans.jpg') }}"
+                        data-original="{{ $user->foto_profil ? asset('storage/' . $user->foto_profil) : asset('images/humans.jpg') }}"
                         alt="Foto Profil"
                         class="h-full w-full object-cover">
                 </div>
+
                 <div>
                     <p class="text-sm font-medium text-slate-800">Foto Profil</p>
-                    <p class="text-xs text-slate-500 mb-2">
-                        Format: JPG, PNG, max 2MB.
-                    </p>
-                    <label class="inline-flex items-center px-3 py-2 rounded-md border border-slate-300 text-xs md:text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 cursor-pointer">
-                        <input type="file" name="avatar" class="hidden" accept="image/*">
-                        <i class="bi bi-upload mr-2"></i> Pilih Foto
-                    </label>
+                    <p class="text-xs text-slate-500 mb-2">Format: JPG, PNG, max 2MB.</p>
+
+                    <div class="flex items-center gap-2">
+                        <label class="inline-flex items-center px-3 py-2 rounded-md border border-slate-300 text-xs md:text-sm text-slate-700 bg-slate-50 hover:bg-slate-100 cursor-pointer">
+                            <input id="avatarInput" type="file" name="avatar" class="hidden" accept="image/*">
+                            <i class="bi bi-upload mr-2"></i> Pilih Foto
+                        </label>
+
+                        {{-- tombol batal preview (balik ke avatar lama) --}}
+                        <button type="button" id="avatarReset"
+                            class="hidden px-3 py-2 rounded-md border border-slate-300 text-xs md:text-sm text-slate-700 bg-white hover:bg-slate-50">
+                            Batal
+                        </button>
+                    </div>
+
                     @error('avatar')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
+
 
             {{-- Nama --}}
             <div class="space-y-1">
@@ -87,4 +99,48 @@
         </form>
     </div>
 </div>
+@section('scripts')
+<script>
+(function () {
+    const input = document.getElementById('avatarInput');
+    const img = document.getElementById('avatarPreview');
+    const resetBtn = document.getElementById('avatarReset');
+    if (!input || !img) return;
+
+    const originalSrc = img.dataset.original;
+
+    function resetPreview() {
+        img.src = originalSrc;
+        input.value = '';          // penting: supaya batal beneran
+        resetBtn?.classList.add('hidden');
+    }
+
+    input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+        if (!file) {
+            resetPreview();
+            return;
+        }
+
+        // validasi cepat client-side (optional, tapi enak)
+        if (!file.type.startsWith('image/')) {
+            alert('File harus berupa gambar.');
+            resetPreview();
+            return;
+        }
+
+        // preview pakai blob URL (lebih cepat dari FileReader)
+        const url = URL.createObjectURL(file);
+        img.src = url;
+        resetBtn?.classList.remove('hidden');
+
+        // revoke setelah gambar keload (hemat memory)
+        img.onload = () => URL.revokeObjectURL(url);
+    });
+
+    resetBtn?.addEventListener('click', resetPreview);
+})();
+</script>
+@endsection
+
 @endsection

@@ -19,7 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public $timestamps = true;
 
     protected $fillable = [
-        'name', 'level', 'email', 'password', 'google_id', 'email_verified_at', 'phone',
+        'name', 'level', 'email', 'password', 'google_id', 'email_verified_at', 'phone', 'foto_profil'
     ];
 
     protected $hidden = [
