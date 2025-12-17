@@ -36,14 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard.index');
-
-
-// =====================
-// PROGRAM DONASI
-// =====================
 
 Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
 Route::get('/programs/{idOrSlug}', [ProgramController::class, 'show'])->name('programs.show');

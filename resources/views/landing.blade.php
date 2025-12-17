@@ -362,32 +362,46 @@
 
         <ul class="mt-6 divide-y divide-slate-200">
             @foreach ($posts as $post)
+                @php
+                    $hasSlug = isset($post['slug']) && $post['slug'];
+                    $href = $hasSlug
+                        ? route('inspirasi.show', $post['slug'])
+                        : $post['url'] ?? route('inspirasi.index');
+
+                    $img = $post['image'] ?? asset('images/default-inspirasi.jpg');
+                    $title = $post['title'] ?? 'Inspirasi';
+                    $date = $post['date'] ?? '';
+                    $excerpt = $post['excerpt'] ?? '';
+                @endphp
+
                 <li class="py-5">
-                    <a href="{{ $post['url'] }}" class="group flex items-start gap-4 md:gap-6">
+                    <a href="{{ $href }}" class="group flex items-start gap-4 md:gap-6">
                         <div class="relative shrink-0 w-28 h-20 md:w-40 md:h-28 overflow-hidden rounded-lg bg-slate-100">
-                            <img src="{{ $post['image'] }}" alt="{{ $post['title'] }}"
+                            <img src="{{ $img }}" alt="{{ $title }}"
                                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
                         </div>
 
                         <div class="min-w-0">
                             <h3
                                 class="text-base md:text-lg font-semibold text-slate-900 leading-snug group-hover:text-emerald-700 line-clamp-2">
-                                {{ $post['title'] }}
+                                {{ $title }}
                             </h3>
 
                             <div class="mt-1 text-xs md:text-sm text-slate-500">
-                                {{ $post['date'] }}
+                                {{ $date }}
                             </div>
 
-                            @if (!empty($post['excerpt']))
+                            @if (!empty($excerpt))
                                 <p class="mt-2 text-sm text-slate-600 line-clamp-2">
-                                    {{ $post['excerpt'] }}
+                                    {{ $excerpt }}
                                 </p>
                             @endif
                         </div>
                     </a>
                 </li>
             @endforeach
+
+
         </ul>
 
         {{-- Tombol minimalis "Lihat Inspirasi Lainnya" --}}
