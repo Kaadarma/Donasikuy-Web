@@ -96,7 +96,11 @@
     </div>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-        <h2 class="text-center text-2xl md:text-3xl font-semibold mt-20">Program Pilihan Kami</h2>
+
+        <h2 class="text-center text-2xl md:text-3xl font-semibold mt-6">
+            Program Pilihan Kami
+        </h2>
+
         <div class="relative rounded-t-xl pt-12 pb-8 mt-12">
             <div class="absolute -top-25 left-1/2 -translate-x-1/2 w-full flex justify-center gap-6">
 
@@ -151,8 +155,7 @@
                                      @elseif($p['status'] === 'Berakhir Hari Ini')
                                         bg-orange-100 text-orange-700
                                      @else
-                                        bg-emerald-50 text-emerald-700 @endif
-                        ">
+                                        bg-emerald-50 text-emerald-700 @endif ">
                                                 {{ $p['status'] }}
                                             </span>
                                         @endif

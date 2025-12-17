@@ -100,7 +100,7 @@
                     </div>
 
                     {{-- Donatur --}}
-                    {{-- Donatur --}}
+
                     <div x-show="tab==='donatur'" x-transition class="mt-4">
                         @if (!isset($donations) || $donations->isEmpty())
                             <div class="rounded-xl border border-slate-200 bg-white p-4 text-[13px] text-slate-600">

@@ -25,7 +25,9 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // 1) Total donasi user ini
+        // =========================
+        // 1. TOTAL DONASI USER INI
+        // =========================
         $totalDonasi = Donation::where('user_id', $user->id)
             ->where('status', 'success')
             ->sum('amount');
