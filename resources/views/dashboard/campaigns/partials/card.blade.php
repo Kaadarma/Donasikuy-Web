@@ -37,12 +37,43 @@
     $isReviewOnly = ($status === 'pending');
 
     // route detail (sementara boleh kamu ganti nanti)
-    $detailUrl = '#';
+    $editUrl    = route('dashboard.campaigns.edit', $p->id);
+    $submitUrl  = route('dashboard.campaigns.submit', $p->id);
+    $manageUrl  = route('dashboard.campaigns.manage', $p->id);
+    $publicUrl  = route('programs.show', $p->slug);
+    $destroyUrl = route('dashboard.campaigns.destroy', $p->id);
+    $reviewUrl  = route('dashboard.campaigns.show', $p->id); // khusus rejected lihat alasan
+
+    $status = $p->status;
+
+    $isDraft     = $status === 'draft';
+    $isPending   = $status === 'pending';
+    $isRejected  = $status === 'rejected';
+    $isRunning   = in_array($status, ['approved', 'running']);
+    $isHistory   = in_array($status, ['completed', 'expired', 'cancelled']);
+
+    $canEdit     = in_array($status, ['draft']);
+    $canSubmit   = in_array($status, ['draft']);
+    $canDelete   = in_array($status, ['draft', 'rejected']);
+
+    // unlimited jangan full 100% biar ga misleading
+    $barWidth = $target > 0 ? $progress : 25;
+
+    $destroyUrl  = route('dashboard.campaigns.destroy', $p->id);
+    $cardUrl = match (true) {
+        $isDraft    => $editUrl,
+        $isRejected => $reviewUrl,
+        $isRunning  => $manageUrl,
+                default     => '#', // pending & lainnya non-klik
+            };
+
 @endphp
 
 <div class="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition">
     {{-- Image --}}
-    <a href="{{ $detailUrl }}" class="{{ $isReviewOnly ? 'block' : 'pointer-events-none' }}">
+
+   <a href="{{ $cardUrl }}" class="{{ $cardUrl === '#' ? 'pointer-events-none' : 'block' }}">
+
         <div class="relative h-44 sm:h-48 bg-slate-100">
             <img src="{{ $imageUrl }}" alt="Campaign Image" class="h-full w-full object-cover">
 
@@ -103,10 +134,6 @@
                 @endif
             </div>
 
-            @php
-                // unlimited jangan full 100% biar ga misleading
-                $barWidth = $target > 0 ? $progress : 25;
-            @endphp
 
             <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div class="h-full bg-emerald-600" style="width: {{ $barWidth }}%"></div>
@@ -114,55 +141,65 @@
         </div>
 
         {{-- Actions --}}
-        @php
-            $isPending  = ($status === 'pending');
-            $isRejected = ($status === 'rejected');
-            $isDraft    = ($status === 'draft');
-
-            $canEdit   = in_array($status, ['draft','rejected']);
-            $canSubmit = in_array($status, ['draft','rejected']); // draft/rejected boleh ajukan ulang
-        @endphp
-
-        {{-- Actions --}}
         @if($isPending)
-            {{-- pending: NO BUTTON (card klik aja) --}}
-        @else
+            {{-- Review: no actions --}}
+        @elseif($isDraft)
             <div class="mt-5 flex gap-3">
+                <a href="{{ $editUrl }}"
+                class="flex-1 inline-flex justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5
+                        text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Edit
+                </a>
 
-                {{-- tombol kiri --}}
-                @if($isRejected)
-                    <a href="{{ $detailUrl }}"
-                    class="flex-1 inline-flex justify-center rounded-full bg-amber-50 px-5 py-2.5 text-sm font-semibold
-                            text-amber-700 border border-amber-200 hover:bg-amber-100 transition">
-                        Lihat Detail Review
-                    </a>
-                @else
-                    <a href="{{ $editUrl ?? '#' }}"
-                    class="flex-1 inline-flex justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5
-                            text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                        Edit
-                    </a>
-                @endif
-
-                {{-- tombol kanan --}}
-                @if($canSubmit)
-                    <form method="POST" action="{{ $submitUrl ?? '#' }}" class="flex-1">
-                        @csrf
-                        <button type="submit"
-                            class="w-full inline-flex justify-center rounded-full bg-emerald-600 px-5 py-2.5
-                                text-sm font-semibold text-white hover:bg-emerald-700 active:bg-emerald-800 transition">
-                            Ajukan
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('programs.show', $p->slug) }}"
-                    class="flex-1 inline-flex justify-center rounded-full bg-emerald-600 px-5 py-2.5
+                <form method="POST" action="{{ $submitUrl }}" class="flex-1">
+                    @csrf
+                    <button type="submit"
+                        class="w-full inline-flex justify-center rounded-full bg-emerald-600 px-5 py-2.5
                             text-sm font-semibold text-white hover:bg-emerald-700 active:bg-emerald-800 transition">
-                        Lihat Halaman
-                    </a>
-                @endif
+                        Ajukan
+                    </button>
+                </form>
+            </div>
 
+        @elseif($isRejected)
+            <div class="mt-5 flex gap-3">
+                <a href="{{ $reviewUrl }}"
+                class="flex-1 inline-flex justify-center rounded-full bg-amber-50 px-5 py-2.5 text-sm font-semibold
+                        text-amber-700 border border-amber-200 hover:bg-amber-100 transition">
+                    Lihat Detail Review
+                </a>
+
+                <form method="POST" action="{{ $destroyUrl }}" class="flex-1">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                        onclick="return confirm('Hapus campaign ini?')"
+                        class="w-full inline-flex justify-center rounded-full bg-red-50 px-5 py-2.5
+                            text-sm font-semibold text-red-700 border border-red-200 hover:bg-red-100 transition">
+                        Hapus
+                    </button>
+                </form>
+            </div>
+
+        @elseif($isRunning)
+            <div class="mt-5 flex gap-3">
+                <a href="{{ $manageUrl }}"
+                class="flex-1 inline-flex justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5
+                        text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Kelola
+                </a>
+
+                <a href="{{ $publicUrl }}"
+                class="flex-1 inline-flex justify-center rounded-full bg-emerald-600 px-5 py-2.5
+                        text-sm font-semibold text-white hover:bg-emerald-700 active:bg-emerald-800 transition">
+                    Lihat Halaman
+                </a>
             </div>
         @endif
+
+
+
+
+
     </div>
 </div>
