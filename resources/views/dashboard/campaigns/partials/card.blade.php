@@ -141,7 +141,6 @@
         </div>
 
         {{-- Actions --}}
-        {{-- Actions --}}
         @if($isPending)
             {{-- Review: no actions --}}
         @elseif($isDraft)

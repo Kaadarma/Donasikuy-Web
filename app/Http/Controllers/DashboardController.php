@@ -270,7 +270,7 @@ class DashboardController extends Controller
 
         $program->update($data);
 
-        return redirect()->route('dashboard.campaigns.show', $program->id)
+        return redirect()->route('dashboard.campaigns.index')
             ->with('success', 'Campaign berhasil diperbarui.');
     }
 
