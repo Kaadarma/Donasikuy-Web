@@ -139,7 +139,10 @@
                     <a href="{{ route('programs.index') }}" class="text-slate-700 font-medium hover:text-emerald-600">
                         Donasi
                     </a>
-                    <a href="#" class="text-slate-700 font-medium hover:text-emerald-600">Event</a>
+                    <a href="{{ route('events.index') }}"
+                        class="text-slate-700 font-medium hover:text-emerald-600">
+                        Event
+                    </a>
                     <a href="{{ route('dana-punia.index') }}"
                         class="text-slate-700 font-medium hover:text-emerald-600">Punia</a>
 

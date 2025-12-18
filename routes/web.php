@@ -16,6 +16,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminKycController;
+use App\Http\Controllers\EventController;
 
 Route::get('/', [LandingController::class, 'index'])
     ->name('landing');
@@ -320,4 +321,31 @@ Route::prefix('admin')->group(function () {
     });
 
 });
+
+// =====================
+// EVENT
+// =====================
+
+Route::get('/events', [EventController::class, 'index'])
+    ->name('events.index');
+
+Route::get('/events/{event:slug}', [EventController::class, 'show'])
+    ->name('events.show');
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/events/{event:slug}/donasi', [EventController::class, 'donate'])
+        ->name('events.donate');
+
+    Route::post('/events/{event:slug}/donasi', [EventController::class, 'processDonation'])
+        ->name('events.donate.process');
+
+    Route::get('/events/{event:slug}/donasi', [EventController::class, 'donate'])
+        ->name('events.donate');
+
+    Route::post('/events/{event:slug}/donasi', [EventController::class, 'processDonation'])
+        ->name('events.donate.process');
+});
+
+
 

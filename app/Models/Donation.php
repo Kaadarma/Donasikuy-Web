@@ -59,4 +59,12 @@ class Donation extends Model
     {
         return in_array($this->status, ['success', 'settlement', 'capture'], true);
     }
+
+    //relasi ke event
+    
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
+
 }
