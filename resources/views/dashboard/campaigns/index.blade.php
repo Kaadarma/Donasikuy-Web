@@ -10,7 +10,7 @@
         <div>
             <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Campaign</h1>
             <p class="mt-2 text-slate-600">
-                Ringkasan campaign kamu berdasarkan status. Riwayat nanti kita buat terpisah.
+                Status Campaign Kamu ada Di sini 
             </p>
         </div>
 
@@ -21,10 +21,9 @@
         </a>
     </div>
         
-    {{-- Quick stats --}}
 
 
-    {{-- Quick nav (sementara, sebelum sidebar dropdown dibuat) --}}
+    {{-- Quick nav  --}}
     <div class="flex flex-wrap gap-2">
         <a href="{{ route('dashboard.campaigns.running') }}"
            class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
