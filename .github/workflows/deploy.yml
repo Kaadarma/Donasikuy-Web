@@ -41,16 +41,19 @@ jobs:
             set -e
 
             cd /var/www/donasiweb
-
             echo "PHP version on VM"
             php -v
 
             echo "Reset broken vendor directory"
-            sudo rm -rf vendor
+            rm -rf vendor
             git checkout -- composer.lock
 
-            echo "nstall dependencies with PHP 8.2"
-            php /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+            echo "Install Composer dependencies"
+            php /usr/local/bin/composer install \
+              --no-dev \
+              --optimize-autoloader \
+              --no-interaction \
+              --prefer-dist
 
             echo "Run migrations"
             php artisan migrate --force
