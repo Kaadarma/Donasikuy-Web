@@ -1,0 +1,71 @@
+name: Laravel CI/CD configuration
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, pdo, pdo_mysql, openssl, tokenizer, xml, ctype, json
+          coverage: none
+
+      - name: Verify PHP version (CI)
+        run: php -v
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy to Azure VM
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USER }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          port: 2121
+          script: |
+            set -e
+
+            cd /var/www/donasiweb
+
+            echo "PHP version on VM"
+            php -v
+
+            echo "Ensure PHP 8.2"
+            sudo update-alternatives --set php /usr/bin/php8.2
+
+            echo "Verify PHP after switch"
+            php -v
+
+            echo "Reset broken vendor directory"
+            rm -rf vendor
+            git checkout -- composer.lock
+
+            echo "nstall dependencies with PHP 8.2"
+            php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+            echo "Run migrations"
+            php8.2 artisan migrate --force
+
+            echo "Optimize Laravel"
+            php8.2 artisan optimize
+            php8.2 artisan config:clear
+            php8.2 artisan route:clear
+            php8.2 artisan view:clear
+
+            echo "Reload PHP-FPM"
+            sudo systemctl reload php8.2-fpm
