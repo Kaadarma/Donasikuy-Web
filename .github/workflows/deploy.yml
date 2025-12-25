@@ -46,7 +46,7 @@ jobs:
             php -v
 
             echo "Reset broken vendor directory"
-            rm -rf vendor
+            sudo rm -rf vendor
             git checkout -- composer.lock
 
             echo "nstall dependencies with PHP 8.2"
