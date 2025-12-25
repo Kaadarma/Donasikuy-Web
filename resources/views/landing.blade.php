@@ -30,7 +30,7 @@
                     <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold max-w-3xl">
                         Bantuan Sosial untuk Masyarakat Menengah dimasa PPKM
                     </h1>
-                    <a href="#program"
+                    <a href="{{ route('programs.index') }}"
                         class="mt-4 inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5
            text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         DONASI SEKARANG
@@ -68,29 +68,45 @@
     <div class="relative z-10 mt-20 px-4">
         <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5">
 
-            <div class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-                <div class="text-slate-500 mb-1">Donasi Terkumpul</div>
-                <div class="text-emerald-600 text-xl md:text-2xl font-semibold">
-                    <span class="odometer" data-target="11289569" data-prefix="Rp " data-suffix="" data-duration="1100">Rp
-                        0</span>
-                </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <div class="text-slate-500 mb-1">Donasi Terkumpul</div>
+            <div class="text-emerald-600 text-xl md:text-2xl font-semibold">
+                <span
+                    class="odometer"
+                    data-target="{{ (int) ($stats['total_donasi'] ?? 0) }}"
+                    data-prefix="Rp "
+                    data-suffix=""
+                    data-duration="1100"
+                >0</span>
             </div>
+        </div>
 
-            <div class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-                <div class="text-slate-500 mb-1">Total Donatur</div>
-                <div class="text-emerald-600 text-xl md:text-2xl font-semibold">
-                    <span class="odometer" data-target="45" data-prefix="" data-suffix=" Donatur"
-                        data-duration="1200">0</span>
-                </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <div class="text-slate-500 mb-1">Total Donatur</div>
+            <div class="text-emerald-600 text-xl md:text-2xl font-semibold">
+                <span
+                    class="odometer"
+                    data-target="{{ (int) ($stats['total_donatur'] ?? 0) }}"
+                    data-prefix=""
+                    data-suffix=" Donatur"
+                    data-duration="1200"
+                >0</span>
             </div>
+        </div>
 
-            <div class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-                <div class="text-slate-500 mb-1">Total Program</div>
-                <div class="text-emerald-600 text-xl md:text-2xl font-semibold">
-                    <span class="odometer" data-target="16" data-prefix="" data-suffix=" Program"
-                        data-duration="1900">0</span>
-                </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <div class="text-slate-500 mb-1">Total Program</div>
+            <div class="text-emerald-600 text-xl md:text-2xl font-semibold">
+                <span
+                    class="odometer"
+                    data-target="{{ (int) ($stats['total_program'] ?? 0) }}"
+                    data-prefix=""
+                    data-suffix=" Program"
+                    data-duration="1900"
+                >0</span>
             </div>
+        </div>
+
 
         </div>
     </div>

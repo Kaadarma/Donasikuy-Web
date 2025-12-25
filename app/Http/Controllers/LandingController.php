@@ -4,45 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\ProgramController;
 use Carbon\Carbon;
+use App\Models\Donation;
+use App\Models\Program;
 
 class LandingController extends Controller
 {
-    public function index()
-    {
-        $stats = [
-            'total_donasi'  => 11289569,
-            'total_donatur' => 45,
-            'total_program' => 6,
-        ];
+public function index()
+{
+    $validStatuses = ['settlement','capture','success','paid'];
 
-        $programs = app(ProgramController::class)->allPrograms();
+    // ✅ stats dari database
+    $stats = [
+        'total_donasi' => (int) Donation::whereIn('status', $validStatuses)->sum('amount'),
 
-        $banners = [
-            [
-                'image' => asset('images/bencana.jpg'),
-                'title' => 'Bantuan Sosial untuk Masyarakat Menengah di masa PPKM',
-                'cta'   => route('landing') . '#program',
-            ],
-        ];
+        // donatur unik (user yang pernah donate)
+        'total_donatur' => (int) Donation::whereIn('status', $validStatuses)
+            ->whereNotNull('user_id')
+            ->distinct('user_id')
+            ->count('user_id'),
 
-        $items = $this->seed();
+        // total program yang publik/aktif (sesuaikan status yang kamu anggap "program")
+        'total_program' => (int) Program::whereIn('status', ['approved','running'])->count(),
+    ];
 
-        $posts = collect($items)
-            ->sortByDesc('published_at')
-            ->take(6)
-            ->map(fn ($a) => [
-                'slug'    => $a['slug'],
-                'title'   => $a['title'],
-                'image'   => $a['image'],
-                'date'    => Carbon::parse($a['published_at'])->translatedFormat('d M Y'),
-                'excerpt' => $a['excerpt'] ?? '',
-                'url'     => route('inspirasi.show', $a['slug']),
-            ])
-            ->values()
-            ->all();
+    $programs = app(ProgramController::class)->allPrograms();
 
-        return view('landing', compact('stats', 'programs', 'banners', 'posts'));
-    }
+    $banners = [
+        [
+            'image' => asset('images/bencana.jpg'),
+            'title' => 'Bantuan Sosial untuk Masyarakat Menengah di masa PPKM',
+            'cta'   => route('landing') . '#program',
+        ],
+    ];
+
+    $items = $this->seed();
+
+    $posts = collect($items)
+        ->sortByDesc('published_at')
+        ->take(6)
+        ->map(fn ($a) => [
+            'slug'    => $a['slug'],
+            'title'   => $a['title'],
+            'image'   => $a['image'],
+            'date'    => Carbon::parse($a['published_at'])->translatedFormat('d M Y'),
+            'excerpt' => $a['excerpt'] ?? '',
+            'url'     => route('inspirasi.show', $a['slug']),
+        ])
+        ->values()
+        ->all();
+
+    return view('landing', compact('stats', 'programs', 'banners', 'posts'));
+}
 
     private function seed(): array
     {
