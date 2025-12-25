@@ -61,7 +61,6 @@ jobs:
             echo "Optimize Laravel"
             php artisan optimize
             php artisan config:clear
-            php artisan route:clear
             php artisan view:clear
 
             echo "Reload PHP-FPM"
