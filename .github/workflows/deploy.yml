@@ -45,27 +45,21 @@ jobs:
             echo "PHP version on VM"
             php -v
 
-            echo "Ensure PHP 8.2"
-            sudo update-alternatives --set php /usr/bin/php8.2
-
-            echo "Verify PHP after switch"
-            php -v
-
             echo "Reset broken vendor directory"
             rm -rf vendor
             git checkout -- composer.lock
 
             echo "nstall dependencies with PHP 8.2"
-            php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+            php /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
             echo "Run migrations"
-            php8.2 artisan migrate --force
+            php artisan migrate --force
 
             echo "Optimize Laravel"
-            php8.2 artisan optimize
-            php8.2 artisan config:clear
-            php8.2 artisan route:clear
-            php8.2 artisan view:clear
+            php artisan optimize
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
 
             echo "Reload PHP-FPM"
             sudo systemctl reload php8.2-fpm
