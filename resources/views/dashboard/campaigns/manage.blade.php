@@ -41,7 +41,7 @@
         </div>
 
         <div class="flex gap-2">
-            <a href="{{ route('dashboard.campaigns.running') }}"
+            <a href="{{ route('dashboard.campaigns.index') }}"
                class="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
                 ← Kembali
             </a>

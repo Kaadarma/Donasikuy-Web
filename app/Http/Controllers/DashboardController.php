@@ -82,13 +82,16 @@ class DashboardController extends Controller
     // =========================
     private function campaignsBaseQuery()
     {
+        $valid = ['success','settlement','capture','paid'];
+
         return Program::query()
             ->where('user_id', auth()->id())
-            ->withSum(['donations as raised_sum' => function ($q) {
-                $q->whereIn('status', ['settlement', 'capture']);
+            ->withSum(['donations as raised_sum' => function ($q) use ($valid) {
+                $q->whereIn('status', $valid);
             }], 'amount')
             ->latest();
     }
+
 
     // =========================
     // DASHBOARD -> CAMPAIGNS (RINGKASAN)
@@ -107,9 +110,21 @@ class DashboardController extends Controller
             ->where('status', Program::STATUS_REJECTED)
             ->paginate(6, ['*'], 'rejected');
 
-        $running = (clone $base)
-            ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
-            ->paginate(6, ['*'], 'running');
+    // RUNNING: approved/running yang masih aktif (deadline null ATAU belum lewat)
+    $running = (clone $base)
+        ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+        ->where(function ($q) {
+            $q->whereNull('deadline')
+              ->orWhereDate('deadline', '>=', now()->toDateString());
+        })
+        ->paginate(6, ['*'], 'running');
+
+    // COMPLETED (expired): approved/running yang deadline sudah lewat
+    $completed = (clone $base)
+        ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+        ->whereNotNull('deadline')
+        ->whereDate('deadline', '<', now()->toDateString())
+        ->paginate(6, ['*'], 'completed');
 
         $review = (clone $base)
             ->where('status', Program::STATUS_PENDING)
@@ -120,9 +135,21 @@ class DashboardController extends Controller
             ->first();
 
         return view('dashboard.campaigns.index', compact(
-            'drafts', 'rejected', 'running', 'review', 'kyc'
+            'drafts', 'rejected', 'running', 'completed', 'review', 'kyc'
         ));
     }
+
+    public function campaignsCompleted()
+    {
+        $campaigns = $this->campaignsBaseQuery()
+            ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+            ->whereNotNull('deadline')
+            ->whereDate('deadline', '<', now()->toDateString())
+            ->paginate(10);
+
+        return view('dashboard.campaigns.completed', compact('campaigns'));
+    }
+
 
     // =========================
     // LIST: RUNNING
@@ -132,10 +159,15 @@ class DashboardController extends Controller
     {
         $campaigns = $this->campaignsBaseQuery()
             ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+            ->where(function ($q) {
+                $q->whereNull('deadline')
+                ->orWhereDate('deadline', '>=', now()->toDateString());
+            })
             ->paginate(10);
 
         return view('dashboard.campaigns.running', compact('campaigns'));
     }
+
 
     // =========================
     // LIST: REVIEW (PENDING)
@@ -332,29 +364,60 @@ class DashboardController extends Controller
         abort_unless($program->user_id === auth()->id(), 403);
         abort_unless(in_array($program->status, [Program::STATUS_APPROVED, Program::STATUS_RUNNING]), 403);
 
+        // ✅ KYC harus approved
+        $kyc = KycSubmission::where('user_id', auth()->id())->first();
+        abort_unless($kyc && $kyc->status === 'approved', 403);
+
+        // ✅ rekening wajib ada
+        abort_unless($kyc->bank_name && $kyc->account_name && $kyc->account_number, 403);
+
         $data = $request->validate([
-            'amount'          => ['required','integer','min:1000'],
-            'note'            => ['nullable','string'],
-            'bank_name'       => ['required','string','max:100'],
-            'account_name'    => ['required','string','max:150'],
-            'account_number'  => ['required','string','max:50'],
+            'amount' => ['required','integer','min:1000'],
+            'note'   => ['required','string','min:5','max:1000'],
         ]);
+
+        $request->validate([
+            'amount' => ['required','integer','min:1000'],
+            'note'   => ['required','string','min:5','max:1000'],
+        ], [
+            'note.required' => 'Catatan wajib diisi.',
+            'note.min'      => 'Catatan minimal 5 karakter.',
+        ]);
+
+
+
+        // ✅ (minimal) cek saldo available (biar proper)
+        $totalRaised = Donation::where('program_id', $program->id)
+            ->whereIn('status', ['settlement','capture','success','paid'])
+            ->sum('amount');
+
+        $totalRequestedOrPaid = DisbursementRequest::where('program_id', $program->id)
+            ->whereIn('status', ['requested','approved','paid']) // kamu bisa sesuaikan: mau lock juga requested atau enggak
+            ->sum('amount');
+
+        $available = (int) $totalRaised - (int) $totalRequestedOrPaid;
+        if ($data['amount'] > $available) {
+            return back()->withErrors([
+                'amount' => 'Nominal melebihi dana yang tersedia untuk dicairkan.'
+            ])->withInput();
+        }
 
         DisbursementRequest::create([
             'program_id'      => $program->id,
             'user_id'         => auth()->id(),
             'amount'          => $data['amount'],
             'note'            => $data['note'] ?? null,
-            'bank_name'       => $data['bank_name'],
-            'account_name'    => $data['account_name'],
-            'account_number'  => $data['account_number'],
             'status'          => 'requested',
+
+            // ✅ snapshot rekening dari KYC
+            'bank_name'       => $kyc->bank_name,
+            'account_name'    => $kyc->account_name,
+            'account_number'  => $kyc->account_number,
         ]);
-
-
 
         return back()->with('success', 'Permintaan pencairan berhasil diajukan (menunggu admin).');
     }
+
 
     // HISTORY PAGE
     public function campaignsHistory()
@@ -365,6 +428,70 @@ class DashboardController extends Controller
 
         return view('dashboard.campaigns.history', compact('campaigns'));
     }
+
+    public function campaignHistoryShow(Program $program)
+    {
+        abort_unless($program->user_id === auth()->id(), 403);
+
+        // hanya boleh lihat rincian untuk yang "selesai" versi kamu (approved/running tapi deadline lewat)
+        // (kalau kamu mau longgarin untuk semua status juga boleh)
+        // abort_unless(...);
+
+        $program->load([
+            'updates' => fn($q) => $q->latest(),
+            'disbursements' => fn($q) => $q->latest(),
+        ]);
+
+        // riwayat pencairan (kalau kamu punya items per request, bisa ->with('items'))
+        $disbursements = DisbursementRequest::where('program_id', $program->id)
+            ->latest()
+            ->paginate(10, ['*'], 'disbursements');
+
+        // ✅ daftar donatur + nominal + tanggal
+        $donations = Donation::query()
+            ->where('program_id', $program->id)
+            ->whereIn('status', ['settlement','capture','success','paid']) // sesuaikan status yang valid di sistemmu
+            ->with(['user:id,name']) // pastikan Donation punya relasi user()
+            ->latest()
+            ->paginate(10, ['*'], 'donations');
+
+        // summary (opsional)
+        $totalRaised = Donation::where('program_id', $program->id)
+            ->whereIn('status', ['settlement','capture','success','paid'])
+            ->sum('amount');
+
+        return view('dashboard.campaigns.history_show', compact(
+            'program',
+            'disbursements',
+            'donations',
+            'totalRaised'
+        ));
+    }
+
+    public function campaignHistoryExtendDeadline(Request $request, Program $program)
+    {
+    abort_unless($program->user_id === auth()->id(), 403);
+
+    // kamu bilang: dari selesai -> pending
+    // optional: batasi hanya kalau deadline sudah lewat
+    // abort_unless($program->deadline && now()->startOfDay()->gt(\Carbon\Carbon::parse($program->deadline)->startOfDay()), 403);
+
+    $data = $request->validate([
+        'deadline' => ['required', 'date', 'after:today'],
+    ]);
+
+    $program->update([
+        'deadline' => $data['deadline'],
+        'status'   => Program::STATUS_PENDING, // menunggu review
+    ]);
+
+    return redirect()
+        ->route('dashboard.campaigns.index')
+        ->with('success', 'Deadline berhasil diperpanjang. Campaign masuk ke Menunggu Review.');
+    }
+
+
+
 
     public function campaignUpdateDestroy(Program $program, CampaignUpdate $update)
     {
@@ -377,46 +504,88 @@ class DashboardController extends Controller
     }
 
     public function disbursementsIndex()
-{
+    {
+        $userId = auth()->id();
+
+        $base = Program::query()
+            ->where('user_id', $userId)
+            ->withSum(['donations as raised_sum' => function ($q) {
+                $q->whereIn('status', ['settlement','capture','success','paid']);
+            }], 'amount');
+
+        $runningPrograms = (clone $base)
+            ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+            ->where(function ($q) {
+                $q->whereNull('deadline')
+                ->orWhereDate('deadline', '>=', now()->toDateString());
+            })
+            ->get();
+
+        $completedPrograms = (clone $base)
+            ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+            ->whereNotNull('deadline')
+            ->whereDate('deadline', '<', now()->toDateString())
+            ->get();
+
+        $kyc = KycSubmission::where('user_id', $userId)->latest('id')->first();
+
+        return view('dashboard.disbursements.index', compact('runningPrograms','completedPrograms','kyc'));
+    }
+
+    public function disbursementsCreate(Program $program)
+    {
+    // owner check
+    abort_unless($program->user_id === auth()->id(), 403);
+
+    // hanya untuk program approved/running (opsional: boleh juga completed by deadline)
+    abort_unless(in_array($program->status, [Program::STATUS_APPROVED, Program::STATUS_RUNNING]), 403);
+
     $userId = auth()->id();
 
+    // KYC user
     $kyc = KycSubmission::where('user_id', $userId)->latest('id')->first();
 
-    // semua program running/approved user (biar bisa pilih mau cairin yang mana)
-    $programs = $this->campaignsBaseQuery()
-        ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
-        ->get();
+    // total dana masuk (valid)
+    // total dana masuk (valid)
+    $validDonation = ['settlement','capture','success','paid'];
+    $totalRaised = (int) Donation::where('program_id', $program->id)
+        ->whereIn('status', $validDonation)
+        ->sum('amount');
 
-    // riwayat semua pencairan user
-    $disbursements = DisbursementRequest::where('user_id', $userId)
+    // ✅ sudah benar-benar cair
+    $totalDisbursed = (int) DisbursementRequest::where('program_id', $program->id)
+        ->whereIn('status', ['paid'])
+        ->sum('amount');
+
+    // ✅ menunggu / diproses (belum cair)
+    $totalPendingDisbursement = (int) DisbursementRequest::where('program_id', $program->id)
+        ->whereIn('status', ['requested','approved'])
+        ->sum('amount');
+
+    // ✅ dana terkunci = pending + paid
+    $totalLocked = $totalPendingDisbursement + $totalDisbursed;
+
+    $available = max(0, $totalRaised - $totalLocked);
+
+
+
+    // riwayat disbursement untuk program ini + items
+    $disbursements = DisbursementRequest::where('program_id', $program->id)
+        ->with(['items'])
         ->latest()
         ->paginate(10);
 
-        // =========================
-    // INI DUA YANG KAMU TANYA
-    // =========================
-
-    // total campaign user
-    $totalCampaigns = Program::where('user_id', $userId)
-    ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
-    ->count();
-
-
-    // total dana terkumpul dari semua campaign user
-    $totalRaisedAll = Donation::whereHas('program', function ($q) use ($userId) {
-            $q->where('user_id', $userId);
-        })
-        ->whereIn('status', ['settlement', 'capture', 'success', 'paid'])
-        ->sum('amount');
-
-    return view('dashboard.disbursements.index', compact(
-        'programs',
+    return view('dashboard.disbursements.create', compact(
+        'program',
         'kyc',
-        'disbursements',
-        'totalCampaigns',
-        'totalRaisedAll'
-    ));    
+        'totalRaised',
+        'totalDisbursed',
+        'totalPendingDisbursement',      
+        'available',
+        'disbursements'
+    ));
     }
+
 
     public function donationsIndex()
 {

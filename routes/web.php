@@ -169,6 +169,16 @@ Route::middleware(['auth', 'kyc.verified'])
         Route::get('/rejected', [DashboardController::class, 'campaignsRejected'])
             ->name('rejected');
 
+        Route::get('/completed', [DashboardController::class, 'campaignsCompleted'])
+            ->name('completed');
+
+        Route::get('/history/{program}', [DashboardController::class, 'campaignHistoryShow'])
+        ->name('history.show');
+
+        Route::post('/history/{program}/extend', [DashboardController::class, 'campaignHistoryExtendDeadline'])
+        ->name('history.extend');
+    
+            
         // batalkan draft
         Route::delete('/{program}', [DashboardController::class, 'campaignDestroy'])->name('destroy');
     
@@ -205,7 +215,22 @@ Route::middleware(['auth', 'kyc.verified'])
         Route::post('/{program}/disbursements', [DashboardController::class, 'campaignStoreDisbursement'])->name('disbursements.store');
 
 
+
+
+
     });
+
+    Route::prefix('dashboard')->middleware('auth')->group(function () {
+        Route::get('/disbursements', [DashboardController::class, 'disbursementsIndex'])
+            ->name('dashboard.disbursements.index');
+
+        Route::get('/disbursements/{program}', [DashboardController::class, 'disbursementsCreate'])
+            ->name('dashboard.disbursements.create');
+
+        Route::post('/disbursements/{program}/request', [DashboardController::class, 'campaignStoreDisbursement'])
+            ->name('dashboard.disbursements.request');
+    });
+
 
 
 

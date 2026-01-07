@@ -39,6 +39,10 @@
            class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
             Ditolak
         </a>
+        <a href="{{ route('dashboard.campaigns.completed') }}"
+        class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            Selesai
+        </a>
     </div>
 
     {{-- Kembali ke Ringkasan (KANAN) --}}
@@ -46,6 +50,7 @@
        class="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
         ← Kembali 
     </a>
+    
 
 </div>
 

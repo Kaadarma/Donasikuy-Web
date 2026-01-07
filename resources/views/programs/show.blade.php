@@ -87,17 +87,49 @@
                     {{-- Cerita --}}
                     <div x-show="tab==='cerita'" x-transition class="mt-4">
                         <h3 class="text-sm font-semibold text-slate-900 mb-2">Cerita Program</h3>
-                        <p class="text-[13px] leading-relaxed text-slate-700">
-                            Cerita lengkap program bisa dimasukkan di sini.
-                        </p>
 
-                        <img src="{{ $program['image'] }}" class="mt-4 rounded-lg border w-full object-cover">
+                        @if(!empty($program['description']))
+                            <div class="text-[13px] leading-relaxed text-slate-700 space-y-2">
+                                {!! nl2br(e($program['description'])) !!}
+                            </div>
+                        @else
+                            <p class="text-[13px] leading-relaxed text-slate-500">
+                                Belum ada cerita program.
+                            </p>
+                        @endif
+
+                        @if(!empty($program['image']))
+                            <img src="{{ $program['image'] }}" class="mt-4 rounded-lg border w-full object-cover">
+                        @endif
                     </div>
+
 
                     {{-- Kabar Terbaru --}}
                     <div x-show="tab==='kabar'" x-transition class="mt-4">
-                        <p class="text-[13px] text-slate-600">Belum ada kabar terbaru.</p>
+                        <div class="space-y-4">
+                            @forelse($updates as $up)
+                                <div class="rounded-2xl border p-4 bg-white">
+                                    <div class="font-semibold">{{ $up['title'] }}</div>
+                                    <div class="text-xs text-slate-500 mb-3">{{ $up['date'] }}</div>
+
+                                    @foreach($up['body'] as $line)
+                                        <p class="text-sm text-slate-700 mb-2">{{ $line }}</p>
+                                    @endforeach
+
+                                    @if(!empty($up['images']))
+                                        <div class="grid grid-cols-2 gap-2 mt-3">
+                                            @foreach($up['images'] as $img)
+                                                <img src="{{ $img }}" class="rounded-xl w-full object-cover">
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @empty
+                                <p class="text-sm text-slate-500">Belum ada kabar terbaru.</p>
+                            @endforelse
+                        </div>
                     </div>
+
 
                     {{-- Donatur --}}
 

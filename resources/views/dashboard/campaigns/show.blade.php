@@ -178,22 +178,6 @@
         </a>
     @endif
 
-
-
-
-                @if(in_array($status, ['approved','running']))
-                    <a href="{{ route('dashboard.campaigns.manage', $program->id) }}"
-                       class="w-full sm:w-auto inline-flex justify-center rounded-full border border-slate-200 bg-white px-6 py-3
-                              text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-                        Kelola Campaign
-                    </a>
-
-                    <a href="{{ route('programs.show', $program->slug) }}"
-                       class="w-full sm:w-auto inline-flex justify-center rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white
-                              hover:bg-emerald-700 active:bg-emerald-800 transition">
-                        Lihat Halaman Publik
-                    </a>
-                @endif
             </div>
 
         </div>

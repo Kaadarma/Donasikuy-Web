@@ -1,30 +1,65 @@
 @php
+    use Carbon\Carbon;
+
+    // ======================
+    // STATUS DASAR (dari DB)
+    // ======================
     $status = $p->status ?? 'draft';
 
-    $statusBadge = match ($status) {
-        'draft'     => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => 'Draft'],
-        'pending'   => ['bg' => 'bg-amber-100',   'text' => 'text-amber-700',   'label' => 'Menunggu Review'],
-        'rejected'  => ['bg' => 'bg-red-100',     'text' => 'text-red-700',     'label' => 'Ditolak'],
-        'approved'  => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'Disetujui'],
-        'running'   => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'Sedang Berjalan'],
-        'completed' => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => 'Selesai'],
-        'expired'   => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => 'Berakhir'],
-        default     => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => ucfirst($status)],
+    // "Selesai" versi tampilan: approved/running tapi deadline sudah lewat
+    $isExpiredByDeadline =
+        in_array($status, ['approved', 'running'])
+        && !empty($p->deadline)
+        && Carbon::parse($p->deadline)->startOfDay()->lt(now()->startOfDay());
+
+    // status untuk badge (yang tampil di bubble)
+    $statusForBadge = $isExpiredByDeadline ? 'completed' : $status;
+
+    // flags (pakai statusForBadge biar konsisten di UI)
+    $isDraft     = $statusForBadge === 'draft';
+    $isPending   = $statusForBadge === 'pending';
+    $isRejected  = $statusForBadge === 'rejected';
+
+    // running cuma kalau memang aktif (bukan lewat deadline)
+    $isRunning   = in_array($status, ['approved', 'running']) && !$isExpiredByDeadline;
+
+    // selesai tampilan
+    $isCompleted = $isExpiredByDeadline || in_array($status, ['completed', 'expired']);
+
+    // kalau kamu butuh history:
+    $isHistory   = in_array($statusForBadge, ['completed', 'expired', 'cancelled']);
+
+    // ======================
+    // BADGE STATUS (PAKAI statusForBadge!)
+    // ======================
+    $statusBadge = match ($statusForBadge) {
+        'draft'     => ['bg'=>'bg-slate-100','text'=>'text-slate-700','label'=>'Draft'],
+        'pending'   => ['bg'=>'bg-amber-100','text'=>'text-amber-700','label'=>'Menunggu Review'],
+        'rejected'  => ['bg'=>'bg-red-100','text'=>'text-red-700','label'=>'Ditolak'],
+        'approved'  => ['bg'=>'bg-emerald-100','text'=>'text-emerald-700','label'=>'Disetujui'],
+        'running'   => ['bg'=>'bg-emerald-100','text'=>'text-emerald-700','label'=>'Sedang Berjalan'],
+        'completed' => ['bg'=>'bg-slate-100','text'=>'text-slate-700','label'=>'Selesai'],
+        'expired'   => ['bg'=>'bg-slate-100','text'=>'text-slate-700','label'=>'Berakhir'],
+        default     => ['bg'=>'bg-slate-100','text'=>'text-slate-700','label'=>ucfirst($statusForBadge)],
     };
 
-    $categoryLabel = $p->category ? ucfirst(str_replace('-', ' ', $p->category)) : 'Tanpa Kategori';
+    // ======================
+    // KATEGORI
+    // ======================
+    $categoryLabel = !empty($p->category)
+        ? ucfirst(str_replace('-', ' ', $p->category))
+        : 'Tanpa Kategori';
 
-    $target   = (int) ($p->target ?? 0);
-    $raised   = (int) ($p->raised ?? 0); // accessor Program::getRaisedAttribute()
-    $progress = ($target > 0) ? (int) min(100, round(($raised / max(1, $target)) * 100)) : 0;
-
-    $deadlineText = $p->deadline ? \Carbon\Carbon::parse($p->deadline)->translatedFormat('d M Y') : null;
-
-    $imageUrl = $p->image
+    // ======================
+    // IMAGE
+    // ======================
+    $imageUrl = !empty($p->image)
         ? asset('storage/' . $p->image)
         : asset('images/placeholder-campaign.jpg');
 
-    // nama pemilik campaign (dari KYC kalau ada)
+    // ======================
+    // OWNER
+    // ======================
     $displayOwner = null;
     if (isset($kyc) && $kyc) {
         $displayOwner = $kyc->account_type === 'organization'
@@ -33,41 +68,47 @@
     }
     $displayOwner = $displayOwner ?: (auth()->user()->name ?? '—');
 
-    // pending/review: card klik -> detail, TANPA tombol
-    $isReviewOnly = ($status === 'pending');
+    // ======================
+    // DONASI & PROGRESS
+    // ======================
+    $target = (int) ($p->target ?? 0);
+    $raised = (int) ($p->raised_sum ?? $p->raised ?? 0);
 
-    // route detail (sementara boleh kamu ganti nanti)
+    $progress = $target > 0 ? (int) min(100, round(($raised / max(1, $target)) * 100)) : 0;
+    $barWidth = $target > 0 ? $progress : 25;
+
+    // ======================
+    // DEADLINE
+    // ======================
+    $deadlineText = $p->deadline
+        ? Carbon::parse($p->deadline)->translatedFormat('d M Y')
+        : null;
+
+    // ======================
+    // ROUTES
+    // ======================
     $editUrl    = route('dashboard.campaigns.edit', $p->id);
     $submitUrl  = route('dashboard.campaigns.submit', $p->id);
     $manageUrl  = route('dashboard.campaigns.manage', $p->id);
     $publicUrl  = route('programs.show', $p->slug);
     $destroyUrl = route('dashboard.campaigns.destroy', $p->id);
-    $reviewUrl  = route('dashboard.campaigns.show', $p->id); // khusus rejected lihat alasan
+    $reviewUrl  = route('dashboard.campaigns.show', $p->id);
+    $historyUrl  = route('dashboard.campaigns.history.show', $p->id);
 
-    $status = $p->status;
-
-    $isDraft     = $status === 'draft';
-    $isPending   = $status === 'pending';
-    $isRejected  = $status === 'rejected';
-    $isRunning   = in_array($status, ['approved', 'running']);
-    $isHistory   = in_array($status, ['completed', 'expired', 'cancelled']);
-
-    $canEdit     = in_array($status, ['draft']);
-    $canSubmit   = in_array($status, ['draft']);
-    $canDelete   = in_array($status, ['draft', 'rejected']);
-
-    // unlimited jangan full 100% biar ga misleading
-    $barWidth = $target > 0 ? $progress : 25;
-
-    $destroyUrl  = route('dashboard.campaigns.destroy', $p->id);
+    // ======================
+    // CARD CLICK BEHAVIOR
+    // ======================
     $cardUrl = match (true) {
-        $isDraft    => $editUrl,
-        $isRejected => $reviewUrl,
-        $isRunning  => $manageUrl,
-                default     => '#', // pending & lainnya non-klik
-            };
-
+        $isDraft     => $editUrl,
+        $isRejected  => $reviewUrl,
+        $isRunning   => $manageUrl,
+        $isCompleted => $historyUrl, // sementara "lihat rincian" arahkan ke show dulu
+        default      => '#',
+    };
 @endphp
+
+
+
 
 <div class="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition">
     {{-- Image --}}
@@ -195,7 +236,19 @@
                     Lihat Halaman
                 </a>
             </div>
+
+        @elseif($isCompleted)
+        <div class="mt-5">
+            <a href="{{ route('dashboard.campaigns.history.show', $p->id) }}"
+            class="w-full inline-flex justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5
+                    text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                Lihat Rincian
+            </a>
+        </div>
         @endif
+
+
+
 
 
 

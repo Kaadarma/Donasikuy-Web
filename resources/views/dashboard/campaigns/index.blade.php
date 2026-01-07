@@ -41,6 +41,11 @@
            class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
             Ditolak
         </a>
+        <a href="{{ route('dashboard.campaigns.completed') }}"
+        class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            Selesai
+        </a>
+
     </div>
 
 
@@ -142,5 +147,29 @@
         </div>
     @endif
 </div>
+
+    {{-- SECTION: Selesai (deadline lewat) --}}
+    <section class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-900">Selesai</h2>
+            <a class="text-sm font-semibold text-emerald-700 hover:underline"
+            href="{{ route('dashboard.campaigns.completed') }}">
+                Lihat semua →
+            </a>
+        </div>
+
+        @if($completed->isEmpty())
+            <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center text-slate-600">
+                Belum ada campaign yang selesai karena deadline.
+            </div>
+        @else
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach($completed as $p)
+                    @include('dashboard.campaigns.partials.card', ['p' => $p, 'mode' => 'completed'])
+                @endforeach
+            </div>
+        @endif
+    </section>
+
 </div>
 @endsection

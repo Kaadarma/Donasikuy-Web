@@ -13,21 +13,29 @@ public function index()
 {
     $validStatuses = ['settlement','capture','success','paid'];
 
-    // ✅ stats dari database
+    // 1) ambil programs dari seed (via ProgramController)
+    $programs = app(ProgramController::class)->allPrograms(); // seed list (decorated)
+
+    // 2) total donasi dari seed = sum raised dari seed programs
+    $seedTotalDonasi  = (int) collect($programs)->sum(fn($p) => (int)($p['raised'] ?? 0));
+
+    // 3) stats dari DB
+    $dbTotalDonasi = (int) Donation::whereIn('status', $validStatuses)->sum('amount');
+
+    $dbTotalDonatur = (int) Donation::whereIn('status', $validStatuses)
+        ->whereNotNull('user_id')
+        ->distinct('user_id')
+        ->count('user_id');
+
+    // total program: DB (approved/running) + seed count
+    $dbTotalProgram = (int) Program::whereIn('status', ['approved','running'])->count();
+    $seedTotalProgram = (int) count($programs);
+
     $stats = [
-        'total_donasi' => (int) Donation::whereIn('status', $validStatuses)->sum('amount'),
-
-        // donatur unik (user yang pernah donate)
-        'total_donatur' => (int) Donation::whereIn('status', $validStatuses)
-            ->whereNotNull('user_id')
-            ->distinct('user_id')
-            ->count('user_id'),
-
-        // total program yang publik/aktif (sesuaikan status yang kamu anggap "program")
-        'total_program' => (int) Program::whereIn('status', ['approved','running'])->count(),
+        'total_donasi'  => $dbTotalDonasi,
+        'total_donatur' => $dbTotalDonatur,         // seed donatur kamu belum ada datanya -> jangan ngarang
+        'total_program' => $seedTotalProgram + $dbTotalProgram,
     ];
-
-    $programs = app(ProgramController::class)->allPrograms();
 
     $banners = [
         [
@@ -55,6 +63,7 @@ public function index()
 
     return view('landing', compact('stats', 'programs', 'banners', 'posts'));
 }
+
 
     private function seed(): array
     {

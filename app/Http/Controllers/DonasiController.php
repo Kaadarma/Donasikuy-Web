@@ -17,6 +17,16 @@ class DonasiController extends Controller
     {
         $fallback = 'https://via.placeholder.com/1200x675?text=Program';
 
+        // file dari storage public: programs/xxx.jpg
+        if (Str::startsWith($path, 'programs/')) {
+            return asset('storage/' . $path);
+        }
+
+        // kalau sudah keburu tersimpan "storage/programs/.."
+        if (Str::startsWith($path, 'storage/')) {
+            return asset($path);
+    }
+
         if (! $path) {
             return $fallback;
         }
@@ -52,11 +62,31 @@ class DonasiController extends Controller
 
         $program = null;
         if (method_exists($pc, 'findProgram')) {
-            $program = $pc->findProgram($slug);
+            $program = $pc->findProgram($slug); // ini sudah ada days_left & status kalau dari seed
         }
 
         if (! $program) {
             $p = Program::where('slug', $slug)->firstOrFail();
+
+            // hitung raised konsisten dari donations
+            $raisedDb = (int) Donation::where('program_id', $p->id)
+                ->whereIn('status', ['success','settlement','capture','paid'])
+                ->sum('amount');
+
+            // hitung days_left + status dari deadline
+            $deadline = $p->deadline; // date/null
+            $daysLeft = null;
+            $statusLabel = 'Tanpa Batas Waktu';
+
+            if (!empty($deadline)) {
+                $today = now()->startOfDay();
+                $end   = \Carbon\Carbon::parse($deadline)->startOfDay();
+                $diff  = $today->diffInDays($end, false);
+
+                if ($diff > 0) { $daysLeft = $diff; $statusLabel = 'Sedang Berjalan'; }
+                elseif ($diff === 0) { $daysLeft = 0; $statusLabel = 'Berakhir Hari Ini'; }
+                else { $daysLeft = 0; $statusLabel = 'Selesai'; }
+            }
 
             $program = [
                 'id' => $p->id,
@@ -66,19 +96,24 @@ class DonasiController extends Controller
                 'image' => $p->image,
                 'banner' => $p->banner ?? $p->image,
                 'target' => (int) ($p->target ?? 0),
-                'raised' => (int) ($p->raised ?? 0),
+                'raised' => $raisedDb,
+
+                // ✅ ini yang kamu butuhin di nominal view
+                'deadline'  => $deadline,
+                'days_left' => $daysLeft,
+                'status'    => $statusLabel,
+
                 'description' => $p->description,
                 'short_description' => $p->short_description,
             ];
         }
 
-        abort_unless($program, 404);
-
-        $program['image'] = $this->resolveImage($program['image'] ?? null);
+        $program['image']  = $this->resolveImage($program['image'] ?? null);
         $program['banner'] = $this->resolveImage($program['banner'] ?? ($program['image'] ?? null));
 
         return $program;
     }
+
 
     public function nominal(Request $request, string $slug)
     {

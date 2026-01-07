@@ -1,44 +1,57 @@
 @php
-    $status = $p->status ?? 'draft';
+    use Carbon\Carbon;
 
-    $statusBadge = match ($status) {
-        'draft'     => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => 'Draft'],
-        'pending'   => ['bg' => 'bg-amber-100',   'text' => 'text-amber-700',   'label' => 'Menunggu Review'],
-        'rejected'  => ['bg' => 'bg-red-100',     'text' => 'text-red-700',     'label' => 'Ditolak'],
-        'approved'  => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'Disetujui'],
-        'running'   => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'Sedang Berjalan'],
-        'completed' => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => 'Selesai'],
-        'expired'   => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => 'Berakhir'],
-        default     => ['bg' => 'bg-slate-100',   'text' => 'text-slate-700',   'label' => ucfirst($status)],
+    // ===== status & deadline =====
+    $status = $p->status ?? 'draft';
+    $deadline = $p->deadline ? Carbon::parse($p->deadline)->startOfDay() : null;
+
+    // ===== raised (fallback) =====
+    // prioritas: accessor raised -> raised_sum (controller) -> 0
+    $raised = (int) ($p->raised ?? $p->raised_sum ?? 0);
+
+    // ===== flags =====
+    $isDraft    = $status === 'draft';
+    $isPending  = $status === 'pending';
+    $isRejected = $status === 'rejected';
+
+    // running = approved/running dan deadline belum lewat / null
+    $isRunning = in_array($status, ['approved', 'running'])
+        && (!$deadline || $deadline->gte(now()->startOfDay()));
+
+    // completed = approved/running tapi deadline sudah lewat
+    $isCompleted = in_array($status, ['approved', 'running'])
+        && $deadline
+        && $deadline->lt(now()->startOfDay());
+
+    // history lainnya (kalau kamu punya)
+    $isHistory = in_array($status, ['expired', 'cancelled']);
+
+    // ===== routes =====
+    $editUrl    = route('dashboard.campaigns.edit', $p->id);
+    $submitUrl  = route('dashboard.campaigns.submit', $p->id);
+    $manageUrl  = route('dashboard.campaigns.manage', $p->id);
+    $publicUrl  = route('programs.show', $p->slug);
+    $destroyUrl = route('dashboard.campaigns.destroy', $p->id);
+    $reviewUrl  = route('dashboard.campaigns.show', $p->id);
+
+    // ===== card click url =====
+    // Draft -> edit
+    // Rejected -> show alasan
+    // Running/Completed -> manage
+    // Pending & lainnya -> non klik
+    $cardUrl = match (true) {
+        $isDraft               => $editUrl,
+        $isRejected            => $reviewUrl,
+        ($isRunning || $isCompleted) => $manageUrl,
+        default                => '#',
     };
 
-    $categoryLabel = $p->category ? ucfirst(str_replace('-', ' ', $p->category)) : 'Tanpa Kategori';
-
-    $target   = (int) ($p->target ?? 0);
-    $raised   = (int) ($p->raised ?? 0); // accessor Program::getRaisedAttribute()
-    $progress = ($target > 0) ? (int) min(100, round(($raised / max(1, $target)) * 100)) : 0;
-
-    $deadlineText = $p->deadline ? \Carbon\Carbon::parse($p->deadline)->translatedFormat('d M Y') : null;
-
-    $imageUrl = $p->image
-        ? asset('storage/' . $p->image)
-        : asset('images/placeholder-campaign.jpg');
-
-    // nama pemilik campaign (dari KYC kalau ada)
-    $displayOwner = null;
-    if (isset($kyc) && $kyc) {
-        $displayOwner = $kyc->account_type === 'organization'
-            ? ($kyc->entity_name ?? null)
-            : ($kyc->full_name ?? null);
+    // ===== badge label override untuk completed by deadline =====
+    if ($isCompleted) {
+        $statusBadge = ['bg' => 'bg-slate-100', 'text' => 'text-slate-700', 'label' => 'Selesai'];
     }
-    $displayOwner = $displayOwner ?: (auth()->user()->name ?? '—');
-
-    // pending/review: card klik -> detail, TANPA tombol
-    $isReviewOnly = ($status === 'pending');
-
-    // route detail (sementara boleh kamu ganti nanti)
-    $detailUrl = '#';
 @endphp
+
 
 <div class="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition">
     {{-- Image --}}

@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Campaign Ditolak')
+@section('title', 'Campaign Selesai')
 @section('page_title', 'Campaign')
 
 @section('content')
@@ -7,9 +7,7 @@
 
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Ditolak</h1>
-            <p class="mt-2 text-slate-600">
-            </p>
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Selesai</h1>
         </div>
 
         <a href="{{ route('galang.create') }}"
@@ -19,7 +17,7 @@
         </a>
     </div>
 
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
     {{-- Quick nav (KIRI) --}}
     <div class="flex flex-wrap gap-2">
@@ -48,23 +46,26 @@
     {{-- Kembali ke Ringkasan (KANAN) --}}
     <a href="{{ route('dashboard.campaigns.index') }}"
        class="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-        ← Kembali
+        ← Kembali 
     </a>
+    
 
-    </div>
+</div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @forelse($rejected as $p)
-            @include('dashboard.campaigns.partials.card', ['p' => $p, 'mode' => 'rejected'])
-        @empty
-            <div class="md:col-span-2 rounded-3xl border border-slate-200 bg-white p-8 text-center text-slate-600">
-                Tidak ada campaign ditolak.
-            </div>
-        @endforelse
-    </div>
+    @if($campaigns->isEmpty())
+        <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center text-slate-600">
+            Tidak ada campaign selesai.
+        </div>
+    @else
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            @foreach($campaigns as $p)
+                @include('dashboard.campaigns.partials.card', ['p' => $p, 'mode' => 'completed'])
+            @endforeach
+        </div>
 
-    <div>
-        {{ $rejected->links() ?? '' }}
-    </div>
+        <div class="mt-6">
+            {{ $campaigns->links() }}
+        </div>
+    @endif
 </div>
 @endsection

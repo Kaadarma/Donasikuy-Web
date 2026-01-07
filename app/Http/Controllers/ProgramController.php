@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Donation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\CampaignUpdate;
+
 
 class ProgramController extends Controller
 {
@@ -16,12 +18,42 @@ class ProgramController extends Controller
         return view('programs.index', compact('programs'));
     }
 
+    private function dbPrograms(): array
+    {
+    return \App\Models\Program::query()
+        ->whereIn('status', ['approved', 'running'])
+        ->get()
+        ->map(function ($p) {
+
+            // hitung raised dari DB
+            $raised = \App\Models\Donation::where('program_id', $p->id)
+                ->whereIn('status', ['success','settlement','capture','paid'])
+                ->sum('amount');
+
+            return [
+                'id'        => $p->id,
+                'slug'      => $p->slug,
+                'title'     => $p->title,
+                'category'  => $p->category,
+                'image'     => $p->image ? asset('storage/'.$p->image) : asset('images/placeholder-campaign.jpg'),
+                'banner'    => $p->image ? asset('storage/'.$p->image) : asset('images/placeholder-campaign.jpg'),
+                'raised'    => (int) $raised,
+                'target'    => (int) ($p->target ?? 0),
+                'deadline'  => $p->deadline,
+            ];
+        })
+        ->toArray();
+    }
+
+
     public function show($idOrSlug)
     {
 
         $programModel = \App\Models\Program::query()
-            ->where('slug', $idOrSlug)
-            ->orWhere('id', $idOrSlug)
+            ->whereIn('status', [\App\Models\Program::STATUS_APPROVED, \App\Models\Program::STATUS_RUNNING])
+            ->where(function ($q) use ($idOrSlug) {
+                $q->where('slug', $idOrSlug)->orWhere('id', $idOrSlug);
+            })
             ->first();
 
         if ($programModel) {
@@ -31,13 +63,22 @@ class ProgramController extends Controller
                 ->whereIn('status', ['success', 'settlement', 'capture'])
                 ->sum('amount');
 
+        $imageUrl  = $programModel->image
+            ? asset('storage/' . $programModel->image)
+            : asset('images/placeholder-campaign.jpg');
+
+        // kalau kamu belum punya kolom banner di DB, ya pakai image aja untuk banner
+        $bannerUrl = $programModel->banner
+            ? (str_starts_with($programModel->banner, 'http') ? $programModel->banner : asset('storage/' . $programModel->banner))
+            : $imageUrl;        
+
             $program = [
                 'id' => $programModel->id,
                 'slug' => $programModel->slug,
                 'title' => $programModel->title,
                 'category' => $programModel->category,
-                'image' => $programModel->image,
-                'banner' => $programModel->banner ?? $programModel->image,
+                'image' => $imageUrl,
+                'banner' => $bannerUrl,
                 'description' => $programModel->description,
                 'short_description' => $programModel->short_description ?? null,
                 'target' => (int) ($programModel->target ?? 0),
@@ -47,23 +88,26 @@ class ProgramController extends Controller
 
             $program = $this->decorateProgram($program);
 
+            $updates = CampaignUpdate::query()
+            ->where('program_id', $programModel->id)
+            ->latest()
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'title' => $u->title,
+                    'date'  => $u->created_at?->translatedFormat('d F Y'),
+                    'body'  => preg_split("/\r\n|\n|\r/", (string) $u->body), // biar cocok sama view kamu yang expect array
+                    'images'=> $u->image ? [asset('storage/' . $u->image)] : [],
+                ];
+            })
+            ->toArray();
+
             // Ambil donasi program ini
             $donations = \App\Models\Donation::query()
                 ->where('program_id', $program['id'])
                 ->orderByDesc('created_at')
                 ->get();
 
-            $updates = [
-                [
-                    'title' => 'Update Bantuan Terbaru',
-                    'date' => '6 November 2025',
-                    'body' => [
-                        'Penggalangan dana masih berlangsung.',
-                        'Terima kasih atas dukungan krama Bali.',
-                    ],
-                    'images' => [],
-                ],
-            ];
 
             return view('programs.show', [
                 'program' => $program,
@@ -167,22 +211,22 @@ class ProgramController extends Controller
 
     public function allPrograms(): array
     {
-        $raw = $this->seed();
+        // 1. seed (dummy)
+        $seedPrograms = $this->seed();
 
-        $lastSlug = session('last_donasi_slug');
-        $lastNominal = session('last_donasi_nominal', 0);
+        // 2. program dari database (approved & running)
+        $dbPrograms = $this->dbPrograms();
 
-        $decorated = array_map(function ($p) use ($lastSlug, $lastNominal) {
+        // 3. gabungkan
+        $merged = array_merge($seedPrograms, $dbPrograms);
 
-            if ($lastSlug && isset($p['slug']) && $p['slug'] === $lastSlug) {
-                $p['raised'] = ($p['raised'] ?? 0) + $lastNominal;
-            }
-
-            return $this->decorateProgram($p);
-        }, $raw);
-
-        return array_values($decorated);
+        // 4. decorate (days_left, status)
+        return array_values(array_map(
+            fn ($p) => $this->decorateProgram($p),
+            $merged
+        ));
     }
+
 
     public function findProgram(string $idOrSlug): ?array
     {

@@ -96,6 +96,12 @@ class Program extends Model
         ]);
     }
 
+    public function isExpiredByDeadline(): bool
+    {
+        if (empty($this->deadline)) return false;
+        return now()->startOfDay()->gt(\Carbon\Carbon::parse($this->deadline)->startOfDay());
+    }
+
     public function updates()
     {
         return $this->hasMany(\App\Models\CampaignUpdate::class, 'program_id');
