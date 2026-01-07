@@ -51,22 +51,19 @@ public function index()
     // 2) total donasi dari seed = sum raised dari seed programs
     $seedTotalDonasi  = (int) collect($programs)->sum(fn($p) => (int)($p['raised'] ?? 0));
 
-    // 3) stats dari DB
-    $dbTotalDonasi = (int) Donation::whereIn('status', $validStatuses)->sum('amount');
+    $cardsTotalDonasi = (int) collect($programs)->sum(fn($p) => (int)($p['raised'] ?? 0));
 
     $dbTotalDonatur = (int) Donation::whereIn('status', $validStatuses)
         ->whereNotNull('user_id')
         ->distinct('user_id')
         ->count('user_id');
 
-    // total program: DB (approved/running) + seed count
-    $dbTotalProgram = (int) Program::whereIn('status', ['approved','running'])->count();
-    $seedTotalProgram = (int) count($programs);
+    $totalProgram = (int) count($programs);
 
     $stats = [
-        'total_donasi'  => $dbTotalDonasi,
-        'total_donatur' => $dbTotalDonatur,         // seed donatur kamu belum ada datanya -> jangan ngarang
-        'total_program' => $seedTotalProgram + $dbTotalProgram,
+        'total_donasi'  => $cardsTotalDonasi,
+        'total_donatur' => $dbTotalDonatur,
+        'total_program' => $totalProgram,
     ];
 
     $banners = [

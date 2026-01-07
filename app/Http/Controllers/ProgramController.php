@@ -321,7 +321,7 @@ class ProgramController extends Controller
         // DATA DASAR (SEPERTI SEBELUMNYA)
         $programs = [
             1 => [
-                'id' => 'seed_1',
+                'id' => 1,
                 'slug' => 'sedekah-beras',
                 'category' => 'Sedekah',
                 'title' => 'Sedekah Beras',
@@ -330,9 +330,10 @@ class ProgramController extends Controller
                 'raised' => 0,
                 'target' => 50_000_000,
                 'deadline' => Carbon::now()->addDays(64)->toDateString(),
+                'is_seeder' => true,
             ],
             2 => [
-                'id' => 'seed_2',
+                'id' => 2,
                 'slug' => 'bantu-bencana-gempa-dengan-kebutuhan-pokok',
                 'category' => 'Kemanusiaan',
                 'title' => 'Bantu Bencana Gempa dengan Kebutuhan Pokok',
@@ -341,9 +342,10 @@ class ProgramController extends Controller
                 'raised' => 500_000_124,
                 'target' => 700_000_000,
                 'deadline' => Carbon::now()->addDays(2)->toDateString(),
+                'is_seeder' => true,
             ],
             3 => [
-                'id' => 'seed_3',
+                'id' => 3,
                 'slug' => 'bantuan-anak-yatim-dan-dhuafa',
                 'category' => 'Pendidikan',
                 'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
@@ -352,9 +354,10 @@ class ProgramController extends Controller
                 'raised' => 235_366_942,
                 'target' => 300_000_000,
                 'deadline' => Carbon::now()->addDays(25)->toDateString(),
+                'is_seeder' => true,
             ],
             4 => [
-                'id' => 'seed_4',
+                'id' => 4,
                 'slug' => 'bantuan-a',
                 'category' => 'Pendidikan',
                 'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
@@ -363,9 +366,10 @@ class ProgramController extends Controller
                 'raised' => 235_366_942,
                 'target' => 300_000_000,
                 'deadline' => Carbon::now()->addDays(25)->toDateString(),
+                'is_seeder' => true,
             ],
             5 => [
-                'id' => 'seed_5',
+                'id' => 5,
                 'slug' => 'gempa-sumedang',
                 'category' => 'Bencana Alam',
                 'title' => 'Gempa Bumi di Sumedang – Rumah Warga Rusak Berat',
@@ -374,9 +378,10 @@ class ProgramController extends Controller
                 'raised' => 32_000_000,
                 'target' => 250_000_000,
                 'deadline' => Carbon::now()->addDays(18)->toDateString(),
+                'is_seeder' => true,
             ],
             6 => [
-                'id' => 'seed_6',
+                'id' => 6,
                 'slug' => 'kekeringan-ntt',
                 'category' => 'Kemanusiaan',
                 'title' => 'Bantu Air Bersih untuk Warga Terdampak Kekeringan di NTT',
@@ -385,6 +390,7 @@ class ProgramController extends Controller
                 'raised' => 15_900_000,
                 'target' => 120_000_000,
                 'deadline' => Carbon::now()->addDays(40)->toDateString(),
+                'is_seeder' => true,
             ],
         ];
 
