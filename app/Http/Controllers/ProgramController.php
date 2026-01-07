@@ -50,6 +50,7 @@ class ProgramController extends Controller
     {
 
         $programModel = \App\Models\Program::query()
+            ->with('user')
             ->whereIn('status', [\App\Models\Program::STATUS_APPROVED, \App\Models\Program::STATUS_RUNNING])
             ->where(function ($q) use ($idOrSlug) {
                 $q->where('slug', $idOrSlug)->orWhere('id', $idOrSlug);
@@ -62,6 +63,29 @@ class ProgramController extends Controller
                 ->where('program_id', $programModel->id)
                 ->whereIn('status', ['success', 'settlement', 'capture'])
                 ->sum('amount');
+
+            $disbursements = \App\Models\DisbursementRequest::query()
+            ->where('program_id', $programModel->id)
+            ->whereIn('status', ['requested','approved','paid']) // biar kelihatan juga yang menunggu
+            ->latest()
+            ->get();
+
+            $kyc = \App\Models\KycSubmission::where('user_id', $programModel->user_id)
+            ->where('status', 'approved')
+            ->latest()
+            ->first();
+
+            $authorName = $kyc
+            ? ($kyc->account_type === 'organisasi'
+                ? ($kyc->entity_name ?? $kyc->full_name)
+                : $kyc->full_name)
+            : null;
+
+
+        $totalDisbursed = $disbursements
+            ->where('status', 'paid')
+            ->sum('amount');
+ 
 
         $imageUrl  = $programModel->image
             ? asset('storage/' . $programModel->image)
@@ -84,6 +108,10 @@ class ProgramController extends Controller
                 'target' => (int) ($programModel->target ?? 0),
                 'raised' => (int) $raised,
                 'deadline' => $programModel->deadline ?? null,
+                'author_name' => $authorName
+                    ?? $programModel->user?->name
+                    ?? 'Donasikuy',
+
             ];
 
             $program = $this->decorateProgram($program);
@@ -113,6 +141,8 @@ class ProgramController extends Controller
                 'program' => $program,
                 'updates' => $updates,
                 'donations' => $donations,
+                'disbursements' => $disbursements,
+                'totalDisbursed' => $totalDisbursed,
             ]);
         }
 
@@ -153,6 +183,7 @@ class ProgramController extends Controller
                 ],
             ],
         ];
+
 
         return view('programs.show', [
             'program' => $program,
@@ -290,7 +321,7 @@ class ProgramController extends Controller
         // DATA DASAR (SEPERTI SEBELUMNYA)
         $programs = [
             1 => [
-                'id' => 1,
+                'id' => 'seed_1',
                 'slug' => 'sedekah-beras',
                 'category' => 'Sedekah',
                 'title' => 'Sedekah Beras',
@@ -301,7 +332,7 @@ class ProgramController extends Controller
                 'deadline' => Carbon::now()->addDays(64)->toDateString(),
             ],
             2 => [
-                'id' => 2,
+                'id' => 'seed_2',
                 'slug' => 'bantu-bencana-gempa-dengan-kebutuhan-pokok',
                 'category' => 'Kemanusiaan',
                 'title' => 'Bantu Bencana Gempa dengan Kebutuhan Pokok',
@@ -312,7 +343,7 @@ class ProgramController extends Controller
                 'deadline' => Carbon::now()->addDays(2)->toDateString(),
             ],
             3 => [
-                'id' => 3,
+                'id' => 'seed_3',
                 'slug' => 'bantuan-anak-yatim-dan-dhuafa',
                 'category' => 'Pendidikan',
                 'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
@@ -323,7 +354,7 @@ class ProgramController extends Controller
                 'deadline' => Carbon::now()->addDays(25)->toDateString(),
             ],
             4 => [
-                'id' => 4,
+                'id' => 'seed_4',
                 'slug' => 'bantuan-a',
                 'category' => 'Pendidikan',
                 'title' => 'Penyaluran Bantuan untuk Anak Yatim dan Dhuafa',
@@ -334,7 +365,7 @@ class ProgramController extends Controller
                 'deadline' => Carbon::now()->addDays(25)->toDateString(),
             ],
             5 => [
-                'id' => 5,
+                'id' => 'seed_5',
                 'slug' => 'gempa-sumedang',
                 'category' => 'Bencana Alam',
                 'title' => 'Gempa Bumi di Sumedang – Rumah Warga Rusak Berat',
@@ -345,7 +376,7 @@ class ProgramController extends Controller
                 'deadline' => Carbon::now()->addDays(18)->toDateString(),
             ],
             6 => [
-                'id' => 6,
+                'id' => 'seed_6',
                 'slug' => 'kekeringan-ntt',
                 'category' => 'Kemanusiaan',
                 'title' => 'Bantu Air Bersih untuk Warga Terdampak Kekeringan di NTT',

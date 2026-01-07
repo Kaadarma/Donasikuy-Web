@@ -11,6 +11,24 @@
         <p class="mt-2 text-slate-600">Pilih campaign untuk mengajukan pencairan dana.</p>
     </div>
 
+    {{-- Kartu Kecil Kesayanganku --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="text-sm text-slate-500">Total Dana Terkumpul Keseluruhan</div>
+            <div class="mt-1 text-2xl font-bold text-slate-900">
+                Rp {{ number_format($totalRaisedAll ?? 0, 0, ',', '.') }}
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="text-sm text-slate-500">Total Campaign</div>
+            <div class="mt-1 text-2xl font-bold text-slate-900">
+                {{ $totalCampaigns ?? 0 }}
+            </div>
+        </div>
+    </div>
+
+
     {{-- Sedang berjalan --}}
     <div class="space-y-4">
         <div class="flex items-center justify-between">

@@ -112,5 +112,11 @@ class Program extends Model
         return $this->hasMany(\App\Models\DisbursementRequest::class, 'program_id');
     }
 
+    public function user()
+    {
+    return $this->belongsTo(\App\Models\User::class);
+    }
+
+
 
 }

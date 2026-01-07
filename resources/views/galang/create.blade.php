@@ -78,6 +78,39 @@
                     </div>
                 </div>
             </label>
+
+            {{-- Pilihan 3: Dana Punia --}}
+            {{-- Pilihan 3: Dana Punia --}}
+            <label class="block cursor-pointer">
+                <input type="radio" name="kategori_galang" value="punia" class="peer hidden">
+                <div
+                    class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 md:px-6 md:py-5 
+                        shadow-xs hover:shadow-md transition
+                        peer-checked:border-emerald-600 peer-checked:ring-2 peer-checked:ring-emerald-100">
+
+                    <div
+                        class="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                        {{-- icon punia --}}
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-7 w-7"
+                            viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path d="M12 2L6 6v2h12V6l-6-4zm-6 8v10h12V10H6zm2 2h8v6H8v-6z"/>
+                        </svg>
+                    </div>
+
+                    <div class="flex-1">
+                        <div class="font-semibold text-slate-900">
+                            Dana Punia
+                        </div>
+                        <p class="mt-1 text-sm text-slate-600">
+                            Galang dana punia untuk mendukung kegiatan keagamaan dan yadnya.
+                        </p>
+                    </div>
+                </div>
+            </label>
+
+
             
             {{-- Tombol Lanjut --}}
             <div class="pt-2">
@@ -114,11 +147,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log("Kategori terpilih:", selected.value);
 
-        if (selected.value === 'lainnya') {
-            window.location.href = "{{ route('galang.form') }}" + "?jenis=" + selected.value;
-        } else if (selected.value === 'medis') {
-            window.location.href = "{{ route('galang.form') }}" + "?jenis=medis";
-        }
+        window.location.href = "{{ route('galang.form') }}" + "?jenis=" + selected.value;
+
 
     });
 });

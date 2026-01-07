@@ -32,9 +32,13 @@ class DashboardController extends Controller
             ->where('status', 'success')
             ->sum('amount');
 
-        // 2) Kartu lain (sementara)
-        $totalCampaign  = 0;
-        $totalPencairan = 0;
+        $totalCampaign = Program::where('user_id', $user->id)
+            ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+            ->count();
+
+        $totalPencairan = DisbursementRequest::where('user_id', $user->id)
+            ->where('status', DisbursementRequest::STATUS_PAID) // atau 'paid'
+            ->sum('amount');
 
         // 3) Donasi 7 hari terakhir
         $weeklyDonations = collect(range(0, 6))
@@ -527,9 +531,40 @@ class DashboardController extends Controller
             ->whereDate('deadline', '<', now()->toDateString())
             ->get();
 
+        $programs = Program::where('user_id', $userId)
+        ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+        ->get();    
+
         $kyc = KycSubmission::where('user_id', $userId)->latest('id')->first();
 
-        return view('dashboard.disbursements.index', compact('runningPrograms','completedPrograms','kyc'));
+        // riwayat pencairan
+        $disbursements = DisbursementRequest::where('user_id', $userId)
+            ->latest()
+            ->paginate(10);
+
+
+        // total dana terkumpul dari SEMUA campaign user
+        $programIdsForThisPage = $runningPrograms->pluck('id')
+            ->merge($completedPrograms->pluck('id'))
+            ->unique()
+            ->values();
+
+        $totalCampaigns = $programIdsForThisPage->count();
+
+        $totalRaisedAll = Donation::whereIn('program_id', $programIdsForThisPage)
+            ->whereIn('status', ['settlement','capture','success','paid'])
+            ->sum('amount');
+
+
+        return view('dashboard.disbursements.index', compact(
+            'programs',
+            'kyc',
+            'runningPrograms',
+            'completedPrograms',
+            'disbursements',
+            'totalCampaigns',
+            'totalRaisedAll'
+        ));
     }
 
     public function disbursementsCreate(Program $program)

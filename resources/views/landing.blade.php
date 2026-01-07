@@ -182,6 +182,14 @@
                                         {{ $p['title'] }}
                                     </h3>
 
+                                    <p class="mt-0.5 text-[11px] text-slate-400">
+                                        oleh:
+                                        <span class="font-medium text-slate-600">
+                                            {{ $p['author_name'] ?? 'Donasikuy' }}
+                                        </span>
+                                    </p>
+
+
                                     {{-- Dana & sisa hari --}}
                                     <div class="mt-4 grid grid-cols-2 text-xs text-slate-500">
                                         <div>

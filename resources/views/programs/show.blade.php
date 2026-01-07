@@ -64,24 +64,61 @@
                 <div x-data="{ tab: 'cerita' }" class="mt-6">
 
                     <div class="flex gap-10 text-sm font-medium border-b border-slate-200">
-                        <button class="relative py-3" :class="tab === 'cerita' ? 'text-emerald-700' : 'text-slate-500'"
-                            @click="tab='cerita'">
+                    <button
+                        class="relative py-3"
+                        :class="tab === 'cerita' ? 'text-emerald-700' : 'text-slate-500'"
+                        @click="tab='cerita'"
+                    >
+                        <span class="relative">
                             Cerita
-                            <span class="absolute -bottom-[1px] left-0 h-[2px] w-12 bg-emerald-700"
-                                x-show="tab==='cerita'"></span>
-                        </button>
-                        <button class="relative py-3" :class="tab === 'kabar' ? 'text-emerald-700' : 'text-slate-500'"
-                            @click="tab='kabar'">
+                            <span
+                                class="absolute left-0 -bottom-[13px] h-[2px] w-full bg-emerald-700"
+                                x-show="tab === 'cerita'"
+                            ></span>
+                        </span>
+                    </button>
+
+                    <button
+                        class="relative py-3"
+                        :class="tab === 'kabar' ? 'text-emerald-700' : 'text-slate-500'"
+                        @click="tab='kabar'"
+                    >
+                        <span class="relative">
                             Kabar Terbaru
-                            <span class="absolute -bottom-[1px] left-0 h-[2px] w-20 bg-emerald-700"
-                                x-show="tab==='kabar'"></span>
-                        </button>
-                        <button class="relative py-3" :class="tab === 'donatur' ? 'text-emerald-700' : 'text-slate-500'"
-                            @click="tab='donatur'">
+                            <span
+                                class="absolute left-0 -bottom-[13px] h-[2px] w-full bg-emerald-700"
+                                x-show="tab === 'kabar'"
+                            ></span>
+                        </span>
+                    </button>
+
+                    <button
+                        class="relative py-3"
+                        :class="tab === 'donatur' ? 'text-emerald-700' : 'text-slate-500'"
+                        @click="tab='donatur'"
+                    >
+                        <span class="relative">
                             Donatur
-                            <span class="absolute -bottom-[1px] left-0 h-[2px] w-12 bg-emerald-700"
-                                x-show="tab==='donatur'"></span>
-                        </button>
+                            <span
+                                class="absolute left-0 -bottom-[13px] h-[2px] w-full bg-emerald-700"
+                                x-show="tab === 'donatur'"
+                            ></span>
+                        </span>
+                    </button>
+
+                    <button
+                        class="relative py-3"
+                        :class="tab === 'pencairan' ? 'text-emerald-700' : 'text-slate-500'"
+                        @click="tab='pencairan'"
+                    >
+                        <span class="relative">
+                            Pencairan Dana
+                            <span
+                                class="absolute left-0 -bottom-[13px] h-[2px] w-full bg-emerald-700"
+                                x-show="tab === 'pencairan'"
+                            ></span>
+                        </span>
+                    </button>                  
                     </div>
 
                     {{-- Cerita --}}
@@ -185,6 +222,50 @@
                         @endif
                     </div>
 
+                    {{-- Riwayat Pencairan --}}
+                    <div x-show="tab==='pencairan'" x-transition class="mt-4">
+                        <h3 class="text-sm font-semibold text-slate-900 mb-2">Riwayat Pencairan Dana</h3>
+
+                        @if(($disbursements ?? collect())->isEmpty())
+                            <p class="text-sm text-slate-500">Belum ada pencairan dana.</p>
+                        @else
+                            <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+                                <div class="px-4 py-3 bg-slate-50 text-xs text-slate-600 flex justify-between">
+                                    <span>Total dicairkan</span>
+                                    <span class="font-semibold text-slate-900">
+                                        Rp {{ number_format($totalDisbursed ?? 0, 0, ',', '.') }}
+                                    </span>
+                                </div>
+
+                                <div class="divide-y">
+                                    @foreach($disbursements as $d)
+                                        <div class="p-4 flex items-start justify-between gap-4">
+                                            <div>
+                                                <div class="text-sm font-semibold text-slate-900">
+                                                    Rp {{ number_format($d->amount, 0, ',', '.') }}
+                                                </div>
+                                                <div class="text-xs text-slate-500 mt-1">
+                                                    {{ optional($d->created_at)->format('d M Y') }}
+                                                    @if(!empty($d->note))
+                                                        • {{ \Illuminate\Support\Str::limit($d->note, 80) }}
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold
+                                                @if($d->status === 'paid') bg-emerald-100 text-emerald-700
+                                                @else bg-amber-100 text-amber-700
+                                                @endif">
+                                                {{ $d->status === 'paid' ? 'Sudah Dibayar' : 'Disetujui' }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+
 
                 </div>
             </div>
@@ -198,7 +279,9 @@
                         <p class="text-xs font-semibold text-emerald-700 mb-1">{{ $program['category'] }}</p>
 
                         {{-- Judul --}}
-                        <h3 class="text-[15px] font-semibold text-slate-900">{{ $program['title'] }}</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            oleh: <span class="font-medium text-slate-700">{{ $program['author_name'] ?? 'Donasikuy' }}</span>
+                        </p>
 
                         {{-- Sisa Waktu --}}
                         <div class="mt-2 text-[12px] text-slate-600">

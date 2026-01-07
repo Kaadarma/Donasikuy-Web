@@ -35,13 +35,30 @@
 
                     <div>
                         <div class="text-sm text-slate-500">Jenis Galang Dana</div>
-                        <div class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
-                            @if($jenis === 'medis')
-                                <span>🩺</span> <span>Medis</span>
-                            @else
-                                <span>💚</span> <span>Lainnya</span>
-                            @endif
-                        </div>
+                            <div class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+                                @if($jenis === 'medis')
+                                    {{-- icon medis --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M10.5 4.5A1.5 1.5 0 0 1 12 3a1.5 1.5 0 0 1 1.5 1.5V7.5H16.5A1.5 1.5 0 0 1 18 9a1.5 1.5 0 0 1-1.5 1.5H13.5V13.5A1.5 1.5 0 0 1 12 15a1.5 1.5 0 0 1-1.5-1.5V10.5H7.5A1.5 1.5 0 0 1 6 9A1.5 1.5 0 0 1 7.5 7.5H10.5V4.5Z"/>
+                                    </svg>
+                                    <span>Medis</span>
+
+                                @elseif($jenis === 'punia')
+                                    {{-- icon punia (pura/temple) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2L6 6v2h12V6l-6-4zm-6 8v10h12V10H6zm2 2h8v6H8v-6z"/>
+                                    </svg>
+                                    <span>Punia</span>
+
+                                @else
+                                    {{-- icon lainnya (hati) --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 21s-5.3-3.13-8.1-6A5.13 5.13 0 0 1 3 7.05 4.86 4.86 0 0 1 7.9 5a4.62 4.62 0 0 1 4.1 2.38A4.62 4.62 0 0 1 16.1 5 4.86 4.86 0 0 1 21 7.05 5.13 5.13 0 0 1 20.1 15C17.3 17.87 12 21 12 21Z"/>
+                                    </svg>
+                                    <span>Lainnya</span>
+                                @endif
+                            </div>
+
                     </div>
                 </div>
 

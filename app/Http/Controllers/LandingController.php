@@ -6,6 +6,7 @@ use App\Http\Controllers\ProgramController;
 use Carbon\Carbon;
 use App\Models\Donation;
 use App\Models\Program;
+use App\Models\KycSubmission; 
 
 class LandingController extends Controller
 {
@@ -15,6 +16,37 @@ public function index()
 
     // 1) ambil programs dari seed (via ProgramController)
     $programs = app(ProgramController::class)->allPrograms(); // seed list (decorated)
+
+    // setelah ambil $programs
+    $programs = collect($programs)->map(function ($p) {
+
+        // default fallback
+        $authorName = 'Donasikuy';
+
+        // hanya program DB yang punya id & user_id
+        if (!empty($p['id'])) {
+
+            $programModel = Program::find($p['id']);
+
+            if ($programModel) {
+                $kyc = KycSubmission::where('user_id', $programModel->user_id)
+                    ->where('status', 'approved')
+                    ->latest()
+                    ->first();
+
+                if ($kyc) {
+                    $authorName = $kyc->account_type === 'organisasi'
+                        ? ($kyc->entity_name ?? $kyc->full_name)
+                        : $kyc->full_name;
+                }
+            }
+        }
+
+        // suntik author ke array program
+        $p['author_name'] = $authorName;
+
+        return $p;
+    })->values()->all();
 
     // 2) total donasi dari seed = sum raised dari seed programs
     $seedTotalDonasi  = (int) collect($programs)->sum(fn($p) => (int)($p['raised'] ?? 0));

@@ -109,7 +109,8 @@ class GalangDanaController extends Controller
         $jenis = $request->query('jenis');
 
         // validasi jenis dari query
-        abort_unless(in_array($jenis, ['medis', 'lainnya']), 404);
+        abort_unless(in_array($jenis, ['medis', 'lainnya', 'punia']), 404);
+
 
         // kategori kamu (buat dropdown/opsi kalau jenis = lainnya)
         $categories = [
@@ -127,7 +128,7 @@ class GalangDanaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'jenis' => ['required', 'in:medis,lainnya'],
+            'jenis' => ['required', 'in:medis,lainnya,punia'],
             'title' => ['required', 'string', 'max:150'],
             'short_description' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -153,7 +154,9 @@ class GalangDanaController extends Controller
             'description' => $data['description'] ?? null,
             'target' => $data['target'] ?? 0,
             'deadline' => $data['deadline'] ?? null,
-            'category' => $data['jenis'] === 'medis' ? 'medis' : $data['category'],
+            'category' => $data['jenis'] === 'medis'
+                ? 'medis'
+                : ($data['jenis'] === 'punia' ? 'punia' : $data['category']),
             'image' => $imagePath,
             'status' => Program::STATUS_DRAFT,
             'slug' => Str::slug($data['title']) . '-' . Str::lower(Str::random(6)),

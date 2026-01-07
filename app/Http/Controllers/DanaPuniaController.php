@@ -9,77 +9,28 @@ class DanaPuniaController extends Controller
 {
     public function index(Request $request)
     {
-        $q = trim((string) $request->query('q', ''));
-        $kategori = (string) $request->query('kategori', '');
-        $sort = (string) $request->query('sort', 'terbaru');
+        $q    = $request->query('q');
+        $sort = $request->query('sort', 'terbaru');
 
-        $query = Program::query()
-            ->leftJoin('donations', function ($join) {
-                $join->on('donations.program_id', '=', 'programs.id')
-                    ->whereIn('donations.status', ['success', 'settlement', 'capture']);
+        $programs = Program::query()
+            ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
+            ->where('category', 'punia')
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($qq) use ($q) {
+                    $qq->where('title', 'like', "%{$q}%")
+                       ->orWhere('short_description', 'like', "%{$q}%");
+                });
             })
-            ->select([
-                'programs.id',
-                'programs.slug',
-                'programs.title',
-                'programs.category',
-                'programs.image',
-                'programs.banner',
-                'programs.target',
-                'programs.created_at',
-            ])
-            ->selectRaw('COALESCE(SUM(donations.amount),0) as raised_calc')
-            ->groupBy([
-                'programs.id',
-                'programs.slug',
-                'programs.title',
-                'programs.category',
-                'programs.image',
-                'programs.banner',
-                'programs.target',
-                'programs.created_at',
-            ]);
+            ->when($sort === 'terkumpul_terbanyak', function ($query) {
+                $query->withSum(['donations as raised_sum' => function ($q) {
+                    $q->whereIn('status', ['settlement', 'capture']);
+                }], 'amount')->orderByDesc('raised_sum');
+            }, function ($query) {
+                $query->latest();
+            })
+            ->paginate(9)
+            ->withQueryString();
 
-        // filter kategori
-        if ($kategori !== '') {
-            $query->where('programs.category', $kategori);
-        }
-
-       
-        if ($q !== '') {
-            $query->where(function ($w) use ($q) {
-                $w->where('programs.title', 'like', "%{$q}%")
-                    ->orWhere('programs.description', 'like', "%{$q}%");
-            });
-        }
-
-        // sort
-        if ($sort === 'terkumpul_terbanyak') {
-            $query->orderByDesc('raised_calc');
-        } else {
-            $query->orderByDesc('programs.created_at');
-        }
-
-        $paginator = $query->paginate(9)->withQueryString();
-
-        // ubah koleksi jadi array biar blade tetap $program['...']
-        $mapped = $paginator->getCollection()->map(function ($p) {
-            return [
-                'id' => $p->id,
-                'slug' => $p->slug,
-                'title' => $p->title,
-                'category' => $p->category ?? 'lainnya',
-                'image' => $p->image ? $p->image : 'images/placeholder.jpg',
-                'banner' => $p->banner ? $p->banner : ($p->image ? $p->image : 'images/placeholder-banner.jpg'),
-                'target' => (int) ($p->target ?? 0),
-                'raised' => (int) ($p->raised_calc ?? 0),
-            ];
-        });
-
-        $paginator->setCollection($mapped);
-
-        return view('danapunia.index', [
-            'programs' => $paginator,
-        ]);
+        return view('danapunia.index', compact('programs'));
     }
 }
