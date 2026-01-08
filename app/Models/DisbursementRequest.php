@@ -15,7 +15,8 @@ class DisbursementRequest extends Model
 
     protected $fillable = [
         'program_id', 'user_id', 'amount', 'note', 'status',
-        'bank_name', 'account_name', 'account_number', 'paid_at'
+        'bank_name', 'account_name', 'account_number', 'paid_at', 'payment_proof', 'admin_note',
+
     ];
 
     public function program() { return $this->belongsTo(Program::class); }

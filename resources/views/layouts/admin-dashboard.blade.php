@@ -51,6 +51,24 @@
                 <span>Verifikasi KYC</span>
             </a>
 
+            <a href="{{ route('admin.campaigns.index') }}"
+            class="flex items-center gap-3 px-4 py-2 rounded hover:bg-slate-100">
+                <i class="bi bi-collection-play text-xl"></i>
+                <span>Verifikasi Campaign</span>
+
+            <a href="{{ route('admin.events.index') }}"
+            class="flex items-center gap-3 px-4 py-2 rounded hover:bg-slate-100">
+                <i class="bi bi-calendar-event"></i>
+                <span>Verifikasi Event</span>
+            </a>
+
+            <a href="{{ route('admin.disbursements.index') }}"
+            class="flex items-center gap-3 px-4 py-2 rounded hover:bg-slate-100">
+                <i class="bi bi-cash-coin"></i>
+                <span>Pencairan Dana</span>
+            </a>
+
+
         </nav>
 
     </aside>

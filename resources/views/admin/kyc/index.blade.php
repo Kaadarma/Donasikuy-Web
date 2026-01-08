@@ -1,94 +1,128 @@
-@extends('layouts.admin-dashboard')
+@extends('layouts.admin-dashboard') {{-- sesuaikan dengan layout admin kamu --}}
 
 @section('title', 'Verifikasi KYC')
 
 @section('content')
+<div class="max-w-7xl mx-auto px-6 py-8">
 
-<div class="space-y-6">
-
-    {{-- HEADER --}}
-    <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-lg font-semibold text-slate-800">Verifikasi KYC</h2>
-            <p class="text-sm text-slate-500">
-                Daftar pengajuan verifikasi identitas pengguna
-            </p>
-        </div>
+    {{-- Header --}}
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Verifikasi KYC</h1>
+        <p class="mt-1 text-slate-600">Daftar pengajuan verifikasi identitas pengguna</p>
     </div>
 
-    {{-- FLASH MESSAGE --}}
-    @if(session('success'))
-        <div class="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
-            {{ session('success') }}
+    {{-- Tabs (filter status) --}}
+    @php
+        $active = request('status', 'pending');
+        $tabs = [
+            'pending'  => 'Menunggu Review',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+            'all'      => 'Semua',
+        ];
+
+        $badgeClass = fn($status) => match($status) {
+            'approved' => 'bg-emerald-100 text-emerald-700',
+            'pending'  => 'bg-amber-100 text-amber-700',
+            'rejected' => 'bg-rose-100 text-rose-700',
+            default    => 'bg-slate-100 text-slate-700',
+        };
+    @endphp
+
+    <div class="flex flex-wrap gap-3 mb-6">
+        @foreach($tabs as $key => $label)
+            <a href="{{ request()->fullUrlWithQuery(['status' => $key === 'all' ? null : $key, 'page' => null]) }}"
+               class="px-5 py-2 rounded-full text-sm font-semibold border transition
+                    {{ $active === $key ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50' }}">
+                {{ $label }}
+            </a>
+        @endforeach
+    </div>
+
+    {{-- Card wrapper --}}
+    <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+
+        {{-- Toolbar: total + search --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-b bg-slate-50">
+            <div class="text-sm font-semibold text-slate-700">
+                Total: {{ $kycs->total() ?? (method_exists($kycs,'count') ? $kycs->count() : 0) }}
+            </div>
+
+            <form method="GET" class="flex items-center gap-2">
+                {{-- keep status when searching --}}
+                @if(request()->has('status') && request('status') !== 'all')
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                @endif
+
+                <input type="text" name="q" value="{{ request('q') }}"
+                       placeholder="Cari nama / email..."
+                       class="w-full md:w-72 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none">
+                <button class="px-5 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition">
+                    Cari
+                </button>
+            </form>
         </div>
-    @endif
 
-    @if(session('danger'))
-        <div class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-            {{ session('danger') }}
+        {{-- Table --}}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-white text-slate-600 border-b">
+                    <tr>
+                        <th class="px-6 py-4 text-left font-semibold">Nama</th>
+                        <th class="px-6 py-4 text-left font-semibold">Email</th>
+                        <th class="px-6 py-4 text-center font-semibold">Status</th>
+                        <th class="px-6 py-4 text-center font-semibold">Tanggal</th>
+                        <th class="px-6 py-4 text-center font-semibold">Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y">
+                    @forelse($kycs as $kyc)
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-900">
+                                    {{ $kyc->full_name ?? $kyc->user->name ?? '-' }}
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-4 text-slate-700">
+                                {{ $kyc->user->email ?? '-' }}
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $badgeClass($kyc->status) }}">
+                                    {{ strtoupper($kyc->status) }}
+                                </span>
+                            </td>
+
+                            <td class="px-6 py-4 text-center text-slate-600">
+                                {{ optional($kyc->created_at)->format('d M Y') }}
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                <a href="{{ route('admin.kyc.show', $kyc->id) }}"
+                                   class="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition">
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-16 text-center text-slate-500">
+                                Belum ada pengajuan KYC pada status ini.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    @endif
 
-    
-    {{-- TABLE CARD --}}
-    <div class="bg-white border rounded-2xl shadow-sm overflow-hidden">
-        
-        <table class="w-full text-sm">
-            <thead class="bg-slate-50 border-b text-slate-600">
-                <tr>
-                    <th class="px-6 py-3 text-left font-medium">Nama</th>
-                    <th class="px-6 py-3 text-left font-medium">Email</th>
-                    <th class="px-6 py-3 text-left font-medium">Status</th>
-                    <th class="px-6 py-3 text-left font-medium">Tanggal</th>
-                    <th class="px-6 py-3 text-center font-medium">Aksi</th>
-                </tr>
-            </thead>
-
-            <tbody class="divide-y">
-                @forelse($kycs as $kyc)
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="px-6 py-4 font-medium text-slate-800">
-                        {{ $kyc->full_name }}
-                    </td>
-
-                    <td class="px-6 py-4 text-slate-600">
-                        {{ $kyc->user->email ?? '-' }}
-                    </td>
-
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
-                            @if($kyc->status=='pending') bg-amber-100 text-amber-700
-                            @elseif($kyc->status=='approved') bg-emerald-100 text-emerald-700
-                            @else bg-red-100 text-red-700
-                            @endif">
-                            {{ strtoupper($kyc->status) }}
-                        </span>
-                    </td>
-
-                    <td class="px-6 py-4 text-slate-500">
-                        {{ $kyc->created_at->format('d M Y') }}
-                    </td>
-
-                    <td class="px-6 py-4 text-center">
-                        <a href="{{ route('admin.kyc.show', $kyc->id) }}"
-                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg
-                                  bg-emerald-50 text-emerald-700 hover:bg-emerald-100
-                                  text-xs font-medium transition">
-                            Detail
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="py-10 text-center text-slate-400">
-                        Belum ada data KYC
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-
+        {{-- Pagination --}}
+        @if(method_exists($kycs, 'links'))
+            <div class="px-6 py-4 border-t bg-white">
+                {{ $kycs->links() }}
+            </div>
+        @endif
     </div>
 </div>
-
 @endsection

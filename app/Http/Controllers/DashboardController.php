@@ -10,9 +10,27 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\CampaignUpdate;
 use App\Models\DisbursementRequest;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Event;
 
 class DashboardController extends Controller
 {
+
+    public function eventsIndex()
+    {
+        $events = Event::where('user_id', auth()->id())
+            ->latest()
+            ->paginate(9);
+
+        return view('dashboard.events.index', compact('events'));
+    }
+
+    public function eventsShow(Event $event)
+    {
+        abort_unless($event->user_id === auth()->id(), 403);
+
+        return view('dashboard.events.show', compact('event'));
+    }
+    
     public function __construct()
     {
         $this->middleware('auth');

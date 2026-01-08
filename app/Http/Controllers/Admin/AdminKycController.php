@@ -8,12 +8,27 @@ use Illuminate\Http\Request;
 
 class AdminKycController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $kycs = KycSubmission::with('user')->latest()->get();
+        $q = $request->q;
+        $status = $request->status; // pending|approved|rejected|null
+
+        $kycs = KycSubmission::query()
+            ->with('user')
+            ->when($status && $status !== 'all', fn($qq) => $qq->where('status', $status))
+            ->when($q, function($qq) use ($q) {
+                $qq->whereHas('user', function($u) use ($q) {
+                    $u->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('admin.kyc.index', compact('kycs'));
     }
+
 
     public function show($id)
     {

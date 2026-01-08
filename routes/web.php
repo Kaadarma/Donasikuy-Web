@@ -16,7 +16,10 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminKycController;
+use App\Http\Controllers\Admin\AdminCampaignController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\Dashboard\UserEventController;
+use App\Http\Controllers\Admin\AdminDisbursementController;
 
 Route::get('/', [LandingController::class, 'index'])
     ->name('landing');
@@ -371,12 +374,13 @@ Route::middleware(['auth','kyc.verified'])
     Route::post('/dashboard/campaigns/{program}/disbursements/{disbursement}/items', 
     [DashboardController::class, 'disbursementItemStore']
 )->name('dashboard.disbursements.items.store');
+
 // =====================
 // ADMIN
 // =====================
-
 Route::prefix('admin')->group(function () {
 
+    // AUTH ADMIN
     Route::get('/login', [AdminAuthController::class, 'showLogin'])
         ->name('admin.login');
 
@@ -384,26 +388,65 @@ Route::prefix('admin')->group(function () {
         ->name('admin.login.submit');
 
     Route::middleware('admin')->group(function () {
+
+        // DASHBOARD
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->name('admin.dashboard');
 
         Route::post('/logout', [AdminAuthController::class, 'logout'])
             ->name('admin.logout');
-        
+
+        // =====================
+        // KYC
+        // =====================
         Route::get('/kyc', [AdminKycController::class, 'index'])
             ->name('admin.kyc.index');
 
         Route::get('/kyc/{kyc}', [AdminKycController::class, 'show'])
             ->name('admin.kyc.show');
 
-        Route::post('kyc/{kyc}/approve', [AdminKycController::class, 'approve'])
+        Route::post('/kyc/{kyc}/approve', [AdminKycController::class, 'approve'])
             ->name('admin.kyc.approve');
 
-        Route::post('kyc/{kyc}/reject', [AdminKycController::class, 'reject'])
+        Route::post('/kyc/{kyc}/reject', [AdminKycController::class, 'reject'])
             ->name('admin.kyc.reject');
-    });
 
+        // =====================
+        // PENGAJUAN GALANG DANA (CAMPAIGN)
+        // =====================
+        Route::get('/campaigns', [AdminCampaignController::class, 'index'])
+            ->name('admin.campaigns.index');
+
+        Route::get('/campaigns/{program}', [AdminCampaignController::class, 'show'])
+            ->name('admin.campaigns.show');
+
+        Route::post('/campaigns/{program}/approve', [AdminCampaignController::class, 'approve'])
+            ->name('admin.campaigns.approve');
+
+        Route::post('/campaigns/{program}/reject', [AdminCampaignController::class, 'reject'])
+            ->name('admin.campaigns.reject');
+
+        Route::get('/events', fn() => view('admin.events.index', ['events' => new \Illuminate\Pagination\LengthAwarePaginator([],0,10)])
+        )->name('admin.events.index');
+
+        Route::get('/disbursements', [AdminDisbursementController::class, 'index'])
+            ->name('admin.disbursements.index');
+
+        Route::get('/disbursements/{disbursement}', [AdminDisbursementController::class, 'show'])
+            ->name('admin.disbursements.show');
+
+        Route::post('/disbursements/{disbursement}/approve', [AdminDisbursementController::class, 'approve'])
+            ->name('admin.disbursements.approve');
+
+        Route::post('/disbursements/{disbursement}/reject', [AdminDisbursementController::class, 'reject'])
+            ->name('admin.disbursements.reject');
+
+        Route::post('/disbursements/{disbursement}/paid', [AdminDisbursementController::class, 'markPaid'])
+            ->name('admin.disbursements.paid');
+
+    });
 });
+
 
 // =====================
 // EVENT
@@ -430,5 +473,26 @@ Route::middleware('auth')->group(function () {
         ->name('events.donate.process');
 });
 
+// =====================
+// DASHBOARD USER - EVENT
+// =====================
+Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::prefix('events')->name('events.')->group(function () {
 
+        // LIST
+        Route::get('/', [UserEventController::class, 'index'])->name('index');
+
+        // CREATE
+        Route::get('/create', [DUserEventController::class, 'create'])->name('create');
+        Route::post('/', [UserEventController::class, 'store'])->name('store');
+
+        // EDIT
+        Route::get('/{event}/edit', [UserEventController::class, 'edit'])->name('edit');
+        Route::put('/{event}', [UserEventController::class, 'update'])->name('update');
+
+        // SHOW (taruh paling bawah biar gak “nangkep” create/edit)
+        Route::get('/{event:slug}', [UserEventController::class, 'show'])->name('show');
+
+    });
+});
 

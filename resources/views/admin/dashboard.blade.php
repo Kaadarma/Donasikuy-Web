@@ -22,7 +22,27 @@
             <i class="bi bi-collection-play text-xl"></i>
         </div>
         <div>
-            <p class="text-xs text-slate-500">Program Pending</p>
+            <p class="text-xs text-slate-500">Campaign Pending</p>
+            <p class="text-xl font-semibold">{{ $programPending }}</p>
+        </div>
+    </div>
+
+    <div class="rounded-xl bg-white border p-5 flex items-center gap-4">
+        <div class="h-12 w-12 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+            <i class="bi bi-calendar-date"></i>
+        </div>
+        <div>
+            <p class="text-xs text-slate-500">Event Pending</p>
+            <p class="text-xl font-semibold">{{ $programPending }}</p>
+        </div>
+    </div>
+
+    <div class="rounded-xl bg-white border p-5 flex items-center gap-4">
+        <div class="h-12 w-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+            <i class="bi bi-cash-coin"></i>
+        </div>
+        <div>
+            <p class="text-xs text-slate-500">Pengajuan Pencairan Dana</p>
             <p class="text-xl font-semibold">{{ $programPending }}</p>
         </div>
     </div>
@@ -30,7 +50,7 @@
 </div>
 
 <div class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-    Silakan lakukan verifikasi KYC dan Program sebelum dipublikasikan.
+    Silakan lakukan verifikasi KYC dan Campaign sebelum dipublikasikan.
 </div>
 
 @endsection
