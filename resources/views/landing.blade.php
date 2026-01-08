@@ -570,7 +570,7 @@
                     Yuk Bantu Saudara Kita <br class="hidden md:block" /> Dengan Berdonasi
                 </h2>
 
-                <a href="#program"
+                <a href="{{ route('programs.index') }}"
                     class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white text-sm md:text-base font-semibold px-6 py-2 rounded-md transition mt-5">
                     DONASI SEKARANG
                 </a>
