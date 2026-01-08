@@ -210,7 +210,7 @@
                         <div class="flex items-center gap-3">
                             <img src="{{ asset('images/logo.png') }}" alt="Logo BantuYuk"
                                 class="h-10 w-10 rounded-full object-cover">
-                            <span class="font-semibold text-emerald-800">BantuYuk</span>
+                            <span class="font-semibold text-emerald-800">DonasiKuy</span>
                         </div>
 
                         <p class="mt-6 font-medium text-slate-800">Saran dan masukan untuk kami</p>
@@ -317,7 +317,7 @@
 
                 {{-- Copyright --}}
                 <div class="mt-10 pt-6 border-t text-sm text-slate-500">
-                    Copyright ©{{ date('Y') }} BantuYuk
+                    Copyright ©{{ date('Y') }} DonasiKuy
                 </div>
             </div>
         </footer>

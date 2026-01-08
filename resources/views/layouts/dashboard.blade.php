@@ -50,8 +50,9 @@
                 <span>Campaign</span>
             </a>
 
-            <a href="#"
-               class="flex items-center gap-3 px-6 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent">
+            <a href="{{ route('dashboard.events.index') }}"
+               class="flex items-center gap-3 px-6 py-2.5 border-l-4
+                      {{ request()->routeIs('dashboard.events.*') ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-medium' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                 <i class="bi bi-calendar-event text-base"></i>
                 <span>Event</span>
             </a>
