@@ -53,16 +53,29 @@ public function index()
 
     $cardsTotalDonasi = (int) collect($programs)->sum(fn($p) => (int)($p['raised'] ?? 0));
 
+    // DONATUR DB
     $dbTotalDonatur = (int) Donation::whereIn('status', $validStatuses)
         ->whereNotNull('user_id')
         ->distinct('user_id')
         ->count('user_id');
 
+    // DONATUR SEED (SESSION)
+    $seedTotalDonatur = (int) collect(session('seed_donations', []))
+        ->filter(fn($d) =>
+            !empty($d['user_id']) &&
+            in_array(($d['status'] ?? null), $validStatuses)
+        )
+        ->pluck('user_id')
+        ->unique()
+        ->count();
+
+    $totalDonatur = $dbTotalDonatur + $seedTotalDonatur;
+
     $totalProgram = (int) count($programs);
 
     $stats = [
         'total_donasi'  => $cardsTotalDonasi,
-        'total_donatur' => $dbTotalDonatur,
+        'total_donatur' => $totalDonatur,
         'total_program' => $totalProgram,
     ];
 
