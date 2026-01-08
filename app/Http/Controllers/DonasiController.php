@@ -58,7 +58,7 @@ class DonasiController extends Controller
 
     private function isSeedProgram(array $program): bool
     {
-    return empty($program['id']) || !Program::where('id', $program['id'])->exists();
+    return (bool) ($program['is_seeder'] ?? false);
     }
 
 
@@ -168,6 +168,8 @@ class DonasiController extends Controller
             // 2) simpen riwayat buat profile
             $seedDonations = session('seed_donations', []);
             $seedDonations[] = [
+                'user_id'     => auth()->id(), // penting biar bisa difilter per user
+                'order_id'    => $orderId,
                 'program_slug' => $program['slug'],
                 'amount' => (int) $data['nominal'],
                 'status' => 'success',

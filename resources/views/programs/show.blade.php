@@ -256,7 +256,7 @@
                                                 @if($d->status === 'paid') bg-emerald-100 text-emerald-700
                                                 @else bg-amber-100 text-amber-700
                                                 @endif">
-                                                {{ $d->status === 'paid' ? 'Sudah Dibayar' : 'Disetujui' }}
+                                                {{ $d->status === 'paid' ? 'Sudah Dibayar' : 'Menunggu' }}
                                             </span>
                                         </div>
                                     @endforeach

@@ -17,16 +17,44 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
+        $valid = ['success','settlement','paid'];
+
         $donationQuery = Donation::query()
             ->where('user_id', $user->id)
             ->whereIn('status', ['success', 'settlement', 'paid']);
 
+        // =========================
+        // 1) DONASI DB
+        // =========================
+        $dbTotal = (int) Donation::where('user_id', $user->id)
+            ->whereIn('status', $valid)
+            ->sum('amount');
+
+        $dbCount = (int) Donation::where('user_id', $user->id)
+            ->whereIn('status', $valid)
+            ->count();
+
+        // =========================
+        // 2) DONASI SEED (SESSION)
+        // =========================
+        $seedRows = collect(session('seed_donations', []))
+            ->filter(fn ($d) =>
+                ($d['user_id'] ?? null) == $user->id
+                && in_array(($d['status'] ?? null), $valid)
+            );
+
+        $seedTotal = (int) $seedRows->sum('amount');
+        $seedCount = (int) $seedRows->count();
+
+        // =========================
+        // 3) SUMMARY FINAL
+        // =========================
         $summary = [
-            'total_donasi' => (int) $donationQuery->sum('amount'),
-            'frekuensi' => (int) $donationQuery->count(),
+            'total_donasi' => $dbTotal + $seedTotal,
+            'frekuensi'    => $dbCount + $seedCount,
         ];
 
-        $valid = ['success','settlement','paid'];
+        
 
         $donatedPrograms = Donation::query()
             ->where('user_id', $user->id)

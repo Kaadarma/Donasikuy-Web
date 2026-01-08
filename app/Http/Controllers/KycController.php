@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 // ganti dengan model KYC punyamu
 use App\Models\KycSubmission;
+use Illuminate\Support\Facades\Storage;
+
 
 class KycController extends Controller
 {
@@ -177,6 +179,17 @@ class KycController extends Controller
             ['user_id' => Auth::id()],
             $allData
         );
+
+        $user = Auth::user();
+
+        $profilePath = $allData['profile_photo_path'] ?? null;
+        if ($profilePath) {
+            if ($user->foto_profil && Storage::disk('public')->exists($user->foto_profil)) {
+                Storage::disk('public')->delete($user->foto_profil);
+            }
+            $user->foto_profil = $profilePath;
+            $user->save();
+        }
 
         // bersihkan session
         session()->forget('kyc');

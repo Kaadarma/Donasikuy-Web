@@ -11,6 +11,9 @@ use App\Models\CampaignUpdate;
 use App\Models\DisbursementRequest;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Event;
+use App\Models\SeedDonation;
+use Illuminate\Pagination\LengthAwarePaginator;
+
 
 class DashboardController extends Controller
 {
@@ -50,6 +53,14 @@ class DashboardController extends Controller
             ->where('status', 'success')
             ->sum('amount');
 
+        $seedTotal = collect(session('seed_donations', []))
+            ->filter(fn($x) => ($x['user_id'] ?? null) == $user->id)
+            ->whereIn('status', ['success','settlement','capture','paid'])
+            ->sum('amount');
+
+        $totalDonasi = (int) $totalDonasi + (int) $seedTotal;
+
+
         $totalCampaign = Program::where('user_id', $user->id)
             ->whereIn('status', [Program::STATUS_APPROVED, Program::STATUS_RUNNING])
             ->count();
@@ -59,23 +70,42 @@ class DashboardController extends Controller
             ->sum('amount');
 
         // 3) Donasi 7 hari terakhir
-        $weeklyDonations = collect(range(0, 6))
-            ->map(function ($i) use ($user) {
-                $date = now()->subDays($i)->startOfDay();
+        $valid = ['success','settlement','capture','paid'];
 
-                $amount = Donation::where('user_id', $user->id)
-                    ->where('status', 'success')
+        $seedRows = collect(session('seed_donations', []))
+            ->filter(fn ($x) => ($x['user_id'] ?? null) == $user->id)
+            ->filter(fn ($x) => in_array(($x['status'] ?? 'success'), $valid))
+            ->map(function ($x) {
+                return [
+                    'date'   => \Carbon\Carbon::parse($x['created_at'] ?? now())->toDateString(),
+                    'amount' => (int) ($x['amount'] ?? 0),
+                ];
+            });
+
+        $weeklyDonations = collect(range(0, 6))
+            ->map(function ($i) use ($user, $seedRows, $valid) {
+                $date = now()->subDays($i)->toDateString();
+
+                // DB
+                $dbAmount = (int) Donation::where('user_id', $user->id)
+                    ->whereIn('status', $valid)
                     ->whereDate('created_at', $date)
                     ->sum('amount');
 
+                // SEED (session)
+                $seedAmount = (int) $seedRows
+                    ->where('date', $date)
+                    ->sum('amount');
+
                 return [
-                    'date'   => $date->toDateString(),
-                    'amount' => $amount,
+                    'date'   => $date,
+                    'amount' => $dbAmount + $seedAmount,
                 ];
             })
             ->sortByDesc('date')
             ->values()
             ->all();
+
 
         // 4) Status KYC dari tabel kyc_submissions
         $kyc = KycSubmission::where('user_id', $user->id)->first();
@@ -644,21 +674,101 @@ class DashboardController extends Controller
 
 
     public function donationsIndex()
+    {
+        $userId = auth()->id();
+        $valid  = ['success', 'settlement', 'capture', 'paid'];
+
+        // ===== 1) DONASI DB =====
+        $dbDonations = Donation::query()
+            ->where('user_id', $userId)
+            ->whereIn('status', $valid)
+            ->with(['program:id,title,slug,image'])
+            ->latest()
+            ->get()
+            ->map(function ($d) {
+                // biar mirip dengan seed object
+                $d->source = 'db';
+                return $d;
+            });
+
+        // ===== 2) DONASI SEED (SESSION) =====
+        $seed = collect(session('seed_donations', []))
+            ->filter(fn($x) => ($x['user_id'] ?? null) == $userId)
+            ->map(function ($x) {
+                // bikin object mirip Donation
+                $o = (object) [
+                    'source'     => 'seed',
+                    'status'     => $x['status'] ?? 'success',
+                    'amount'     => (int) ($x['amount'] ?? 0),
+                    'created_at' => \Carbon\Carbon::parse($x['created_at'] ?? now()),
+                    'order_id'   => $x['order_id'] ?? null,
+                    'program'    => (object) [
+                        'title' => $this->seedProgramTitle($x['program_slug'] ?? null),
+                        'slug'  => $x['program_slug'] ?? null,
+                        'image' => $this->seedProgramImage($x['program_slug'] ?? null),
+                    ],
+                ];
+                return $o;
+            });
+
+        // ===== 3) GABUNG + SORT =====
+        $all = $dbDonations
+            ->concat($seed)
+            ->sortByDesc(fn($d) => $d->created_at)
+            ->values();
+
+        // ===== 4) PAGINATE MANUAL =====
+        $perPage = 10;
+        $page = request()->integer('page', 1);
+
+        $paged = new LengthAwarePaginator(
+            $all->slice(($page - 1) * $perPage, $perPage)->values(),
+            $all->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        // ===== 5) TOTAL DONASI (DB + SEED) =====
+        $totalDonasiDb = Donation::where('user_id', $userId)
+            ->whereIn('status', $valid)
+            ->sum('amount');
+
+        $totalDonasiSeed = collect(session('seed_donations', []))
+            ->filter(fn($x) => ($x['user_id'] ?? null) == $userId)
+            ->whereIn('status', $valid)
+            ->sum('amount');
+
+        $totalDonasi = (int) $totalDonasiDb + (int) $totalDonasiSeed;
+
+        return view('dashboard.donations.index', [
+            'donations' => $paged,
+            'totalDonasi' => $totalDonasi,
+        ]);
+    }
+
+    private function seedProgramData(?string $slug): ?array
 {
-    $userId = auth()->id();
+    if (!$slug) return null;
 
-    $donations = Donation::query()
-        ->where('user_id', $userId)
-        ->whereIn('status', ['success', 'settlement', 'capture', 'paid'])
-        ->with(['program:id,title,slug,image'])
-        ->latest()
-        ->paginate(10);
+    $pc = app(\App\Http\Controllers\ProgramController::class);
+    $p = $pc->findProgram($slug); // dari seed ProgramController
 
-    $totalDonasi = Donation::where('user_id', $userId)
-        ->whereIn('status', ['success', 'settlement', 'capture', 'paid'])
-        ->sum('amount');
+    return $p ?: null;
+}
 
-    return view('dashboard.donations.index', compact('donations', 'totalDonasi'));
+private function seedProgramTitle(?string $slug): string
+{
+    return $this->seedProgramData($slug)['title'] ?? 'Campaign (Seed)';
+}
+
+private function seedProgramImage(?string $slug): string
+{
+    $p = $this->seedProgramData($slug);
+    $img = $p['image'] ?? null;
+
+    // image seed biasanya sudah asset('images/xxx')
+    return $img ?: asset('images/placeholder-campaign.jpg');
 }
 
 public function disbursementItemStore(Request $request, Program $program, DisbursementRequest $disbursement)
