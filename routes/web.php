@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\AdminKycController;
 use App\Http\Controllers\Admin\AdminCampaignController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Dashboard\UserEventController;
+use App\Http\Controllers\Admin\AdminDisbursementController;
 
 Route::get('/', [LandingController::class, 'index'])
     ->name('landing');
@@ -425,14 +426,23 @@ Route::prefix('admin')->group(function () {
         Route::post('/campaigns/{program}/reject', [AdminCampaignController::class, 'reject'])
             ->name('admin.campaigns.reject');
 
-        Route::get('/campaigns', fn() => view('admin.campaigns.index', ['campaigns' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage() ? new \Illuminate\Pagination\LengthAwarePaginator([],0,10) : new \Illuminate\Pagination\LengthAwarePaginator([],0,10)])
-        )->name('admin.campaigns.index');
-
         Route::get('/events', fn() => view('admin.events.index', ['events' => new \Illuminate\Pagination\LengthAwarePaginator([],0,10)])
         )->name('admin.events.index');
 
-        Route::get('/disbursements', fn() => view('admin.disbursements.index', ['disbursements' => new \Illuminate\Pagination\LengthAwarePaginator([],0,10)])
-        )->name('admin.disbursements.index');
+        Route::get('/disbursements', [AdminDisbursementController::class, 'index'])
+            ->name('admin.disbursements.index');
+
+        Route::get('/disbursements/{disbursement}', [AdminDisbursementController::class, 'show'])
+            ->name('admin.disbursements.show');
+
+        Route::post('/disbursements/{disbursement}/approve', [AdminDisbursementController::class, 'approve'])
+            ->name('admin.disbursements.approve');
+
+        Route::post('/disbursements/{disbursement}/reject', [AdminDisbursementController::class, 'reject'])
+            ->name('admin.disbursements.reject');
+
+        Route::post('/disbursements/{disbursement}/paid', [AdminDisbursementController::class, 'markPaid'])
+            ->name('admin.disbursements.paid');
 
     });
 });
