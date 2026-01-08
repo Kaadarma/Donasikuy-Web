@@ -290,8 +290,16 @@ class ProgramController extends Controller
                 ->sum('amount');
         }
 
+            // 👉 TAMBAHKAN INI
+            $seedOverrides = session('donasi_overrides', []);
+            $seedRaised = !empty($p['slug']) && isset($seedOverrides[$p['slug']])
+                ? (int) $seedOverrides[$p['slug']]
+                : 0;
+
+            // 🔥 INI YANG DIPAKAI VIEW
+            $p['raised'] = $raisedDb + $seedRaised;
+
         // DEFAULT WAJIB
-        $p['raised'] = $raisedDb;
         $p['days_left'] = $p['days_left'] ?? 0;
         $p['status'] = $p['status'] ?? 'Tanpa Batas Waktu';
 
@@ -407,4 +415,14 @@ class ProgramController extends Controller
 
         return $programs;
     }
+
+    public function isSeedSlug(string $slug): bool
+    {
+    $seed = $this->seed();
+    foreach ($seed as $p) {
+        if (($p['slug'] ?? null) === $slug) return true;
+    }
+    return false;
+    }
+
 }

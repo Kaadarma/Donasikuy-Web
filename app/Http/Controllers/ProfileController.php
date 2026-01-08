@@ -26,7 +26,62 @@ class ProfileController extends Controller
             'frekuensi' => (int) $donationQuery->count(),
         ];
 
-        return view('profile.index', compact('user', 'summary'));
+        $valid = ['success','settlement','paid'];
+
+        $donatedPrograms = Donation::query()
+            ->where('user_id', $user->id)
+            ->whereIn('status', $valid)
+            ->selectRaw('program_id,
+                SUM(amount) as user_total_amount,
+                MAX(created_at) as last_donated_at
+            ')
+            ->groupBy('program_id')
+            ->orderByDesc('last_donated_at')
+            ->with(['program' => function ($q) {
+                $q->select('id','title','slug','image','category','target','deadline','status','user_id');
+            }, 'program.user:id,name'])
+            ->get()
+            ->filter(fn($row) => $row->program) // safety kalau program kehapus
+            ->values();
+
+        $seedDonations = collect(session('seed_donations', []))
+        ->filter(fn($d) => ($d['status'] ?? null) && in_array($d['status'], $valid))
+        ->groupBy('program_slug')
+        ->map(function ($rows, $slug) {
+            $total = $rows->sum('amount');
+            $last  = $rows->max('created_at');
+
+            // ambil data program seed dari ProgramController
+            $pc = app(\App\Http\Controllers\ProgramController::class);
+            $p  = $pc->findProgram($slug);
+
+            if (!$p) return null;
+
+            return (object) [
+                'program_id' => 'seed:' . $slug,
+                'user_total_amount' => $total,
+                'last_donated_at' => $last,
+                'program' => (object) [
+                    'id' => null,
+                    'slug' => $p['slug'],
+                    'title' => $p['title'],
+                    'image' => $p['image'], // ini sudah asset(...) dari seed
+                    'category' => $p['category'] ?? null,
+                ],
+            ];
+        })
+        ->filter()
+        ->values();
+
+        $donatedPrograms = $donatedPrograms
+            ->concat($seedDonations)
+            ->sortByDesc('last_donated_at')
+            ->values();
+
+
+
+        return view('profile.index', compact('user', 'summary', 'donatedPrograms'));
+
     }
 
     public function edit()

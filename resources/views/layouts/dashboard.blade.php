@@ -57,10 +57,14 @@
             </a>
             
             <a href="{{ route('dashboard.donations.index') }}"
-            class="flex items-center gap-3 px-6 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent">
+            class="flex items-center gap-3 px-6 py-2.5 border-l-4
+                    {{ request()->routeIs('dashboard.donations.*')
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700 font-medium'
+                        : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                 <i class="bi bi-clock-history text-base"></i>
                 <span>Riwayat Donasi</span>
             </a>
+
 
 
             <a href="{{ route('dashboard.disbursements.index') }}"
@@ -106,6 +110,9 @@
                      class="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg border border-slate-200 py-2 z-50">
                     <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
                         Profil Saya
+                    </a>
+                    <a href="{{ route('landing') }}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                        Beranda
                     </a>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf

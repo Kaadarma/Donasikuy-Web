@@ -8,15 +8,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('programs', function (Blueprint $table) {
-            $table->boolean('is_active')->default(true)->after('target');
+            $table->unsignedBigInteger('raised')->default(0)->after('target');
         });
     }
 
     public function down(): void
     {
         Schema::table('programs', function (Blueprint $table) {
-            $table->dropColumn('is_active');
+            $table->dropColumn('raised');
         });
     }
 };
-

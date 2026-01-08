@@ -58,97 +58,27 @@
         </div>
     </section>
 
-    {{-- Aktifitas saya --}}
-    <section class="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100">
-            <h3 class="text-lg font-semibold text-slate-900">Aktifitas Saya</h3>
+<div class="mt-8">
+    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+        Campaign yang Pernah Kamu Donasi
+    </h3>
+
+    @if($donatedPrograms->isNotEmpty())
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            @foreach($donatedPrograms as $row)
+                @include('profile.partials.card', ['row' => $row])
+            @endforeach
         </div>
-
-        <div class="divide-y divide-slate-100 text-sm">
-
-            {{-- Transaksi Saya --}}
-            <button type="button"
-                class="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-emerald-50">
-                <div class="flex items-center gap-3">
-                    <span class="h-9 w-9 rounded-lg border border-emerald-500 bg-emerald-50 flex items-center justify-center text-emerald-600">
-                        <i class="bi bi-receipt-cutoff text-lg"></i>
-                    </span>
-                    <span class="font-medium text-slate-800">Transaksi Saya</span>
-                </div>
-                <i class="bi bi-chevron-right text-slate-400"></i>
-            </button>
-
-            {{-- Akun bank --}}
-            <button type="button"
-                class="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-slate-50">
-                <div class="flex items-center gap-3">
-                    <span class="h-9 w-9 rounded-lg border border-slate-300 bg-slate-50 flex items-center justify-center text-slate-600">
-                        <i class="bi bi-credit-card-2-front text-lg"></i>
-                    </span>
-                    <span class="font-medium text-slate-800">Akun Bank</span>
-                </div>
-                <i class="bi bi-chevron-right text-slate-400"></i>
-            </button>
-
-            {{-- Pengaturan --}}
-            <button type="button"
-                class="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-slate-50">
-                <div class="flex items-center gap-3">
-                    <span class="h-9 w-9 rounded-lg border border-slate-300 bg-slate-50 flex items-center justify-center text-slate-600">
-                        <i class="bi bi-gear text-lg"></i>
-                    </span>
-                    <span class="font-medium text-slate-800">Pengaturan</span>
-                </div>
-                <i class="bi bi-chevron-right text-slate-400"></i>
-            </button>
-
-            {{-- Bantuan --}}
-            <button type="button"
-                class="w-full text-left px-6 py-4 flex items-center justify-between hover:bg-slate-50">
-                <div class="flex items-center gap-3">
-                    <span class="h-9 w-9 rounded-lg border border-slate-300 bg-slate-50 flex items-center justify-center text-slate-600">
-                        <i class="bi bi-question-circle text-lg"></i>
-                    </span>
-                    <span class="font-medium text-slate-800">Bantuan</span>
-                </div>
-                <i class="bi bi-chevron-right text-slate-400"></i>
-            </button>
-        </div>
-    </section>
-
-    {{-- Popup tanggal lahir (UI saja, logic nanti) --}}
-    <div x-show="openDobModal"
-         style="display:none"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <h2 class="text-lg font-semibold text-slate-900 mb-2">
-                Atur Tanggal Lahir
-            </h2>
-            <p class="text-sm text-slate-500 mb-4">
-                Fitur simpan tanggal lahir akan dihubungkan nanti. Untuk sekarang ini hanya tampilan.
-            </p>
-
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-slate-700">
-                    Tanggal lahir
-                </label>
-                <input type="date"
-                       class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button"
-                        @click="openDobModal = false"
-                        class="px-4 py-2 text-sm rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">
-                    Tutup
-                </button>
-                <button type="button"
-                        class="px-4 py-2 text-sm rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
-                    Simpan
-                </button>
-            </div>
-        </div>
+    @else
+    <div class="flex justify-center items-center py-12">
+        <p class="text-sm text-slate-500 text-center">
+            Kamu belum pernah berdonasi ke campaign mana pun.
+        </p>
     </div>
+    @endif
+</div>
+
+
 
 </div>
 @endsection

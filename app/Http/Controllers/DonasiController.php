@@ -56,6 +56,12 @@ class DonasiController extends Controller
         return $fallback;
     }
 
+    private function isSeedProgram(array $program): bool
+    {
+    return empty($program['id']) || !Program::where('id', $program['id'])->exists();
+    }
+
+
     private function getProgram(string $slug): array
     {
         $pc = app(\App\Http\Controllers\ProgramController::class);
@@ -151,18 +157,39 @@ class DonasiController extends Controller
 
         $orderId = 'DON-' . ($program['id'] ?? 'X') . '-' . Str::random(8);
 
-        Donation::create([
-            'user_id' => auth()->check() ? auth()->id() : null,
-            'program_id' => $program['id'],
-            'donor_name' => $data['nama'],
-            'is_anonymous' => $isAnonymous ? 1 : 0,
-            'amount' => (int) $data['nominal'],
-            'message' => $data['pesan'] ?? null,
-            'status' => 'success',
-        ]);
+        $isSeed = $this->isSeedProgram($program);
 
-        if (!empty($program['id'])) {
-            Program::where('id', $program['id'])->increment('raised', (int) $data['nominal']);
+        if ($isSeed) {
+            // 1) update progress seed (yang kamu udah punya)
+            $overrides = session('donasi_overrides', []);
+            $overrides[$program['slug']] = ($overrides[$program['slug']] ?? 0) + (int) $data['nominal'];
+            session(['donasi_overrides' => $overrides]);
+
+            // 2) simpen riwayat buat profile
+            $seedDonations = session('seed_donations', []);
+            $seedDonations[] = [
+                'program_slug' => $program['slug'],
+                'amount' => (int) $data['nominal'],
+                'status' => 'success',
+                'created_at' => now()->toDateTimeString(),
+            ];
+            session(['seed_donations' => $seedDonations]);
+
+        } else {
+            Donation::create([
+                'user_id' => auth()->check() ? auth()->id() : null,
+                'program_id' => $program['id'],
+                'donor_name' => $data['nama'],
+                'is_anonymous' => $isAnonymous ? 1 : 0,
+                'amount' => (int) $data['nominal'],
+                'message' => $data['pesan'] ?? null,
+                'status' => 'success',
+                // kalau kamu punya kolom order_id, masukin juga biar sukses page enak:
+                // 'order_id' => $orderId,
+            ]);
+
+            Program::where('id', $program['id'])
+                ->increment('raised', (int) $data['nominal']);
         }
 
         $this->setMidtransConfig();
@@ -179,7 +206,7 @@ class DonasiController extends Controller
             ],
             'item_details' => [
                 [
-                    'id' => $program['id'],
+                    'id' => $isSeed ? $program['slug'] : $program['id'],
                     'price' => $data['nominal'],
                     'quantity' => 1,
                     'name' => substr($program['title'], 0, 50),

@@ -237,7 +237,10 @@ class DashboardController extends Controller
             'status' => Program::STATUS_PENDING,
         ]);
 
-        return back()->with('success', 'Campaign kamu berhasil diajukan dan sedang direview admin.');
+        return redirect()
+            ->route('dashboard.campaigns.index')
+            ->with('success', 'Campaign kamu berhasil diajukan dan sedang direview admin.');
+
 
             
     }
