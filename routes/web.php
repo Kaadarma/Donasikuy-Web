@@ -318,8 +318,7 @@ Route::middleware('auth')->get('/kyc-required', function () {
 Route::post('/donasi/{program:slug}/proses', [DonasiController::class, 'proses'])
     ->name('donasi.proses');
 
-Route::get('/pembayaran/{kode}', [PembayaranController::class, 'show'])
-    ->name('pembayaran.show');
+
 
 // =====================
 // EMAIL VERIFICATION
@@ -483,7 +482,7 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
         Route::get('/', [UserEventController::class, 'index'])->name('index');
 
         // CREATE
-        Route::get('/create', [DUserEventController::class, 'create'])->name('create');
+        Route::get('/create', [UserEventController::class, 'create'])->name('create');
         Route::post('/', [UserEventController::class, 'store'])->name('store');
 
         // EDIT

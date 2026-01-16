@@ -106,93 +106,143 @@
 
     {{-- HEADER / NAVBAR --}}
     @unless (View::hasSection('authpage'))
-        <header class="sticky top-0 z-50 bg-white border-b shadow-sm">
-            <div class="max-w-7xl mx-auto h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b shadow-sm" x-data="{ mobileOpen:false, mobileSearch:false }">
+        <div class="max-w-7xl mx-auto h-16 md:h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
-                {{-- Logo kiri --}}
-                <a href="{{ url('/') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/logo.png') }}" class="h-20 w-20 object-contain" alt="Logo">
-                    <span class="font-bold text-xl text-emerald-700">
-                        DonasiKuy<span class="text-sm text-emerald-400">.com</span>
+            {{-- Logo kiri --}}
+            <a href="{{ url('/') }}" class="flex items-center gap-2 md:gap-3 min-w-0">
+                <img src="{{ asset('images/logo.png') }}" class="h-10 w-10 md:h-20 md:w-20 object-contain" alt="Logo">
+                <span class="font-bold text-base md:text-xl text-emerald-700 truncate">
+                    DonasiKuy<span class="text-xs md:text-sm text-emerald-400">.com</span>
+                </span>
+            </a>
+
+            {{-- Search Bar Desktop (tetap) --}}
+            <form action="{{ route('program.search') }}" method="GET" class="hidden md:flex flex-1 mx-8">
+                <div class="relative w-full max-w-xl">
+                    <input type="search" name="q"
+                        class="w-full h-12 border border-slate-300 rounded-xl pl-4 pr-10 text-sm outline-none
+                            focus:ring-2 focus:ring-emerald-500"
+                        placeholder="Cari Program" value="{{ request('q') }}">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m21 21-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
+                        </svg>
                     </span>
-                </a>
+                </div>
+            </form>
 
-                {{-- Search Bar Tengah --}}
-                <form action="{{ route('program.search') }}" method="GET" class="hidden md:flex flex-1 mx-8">
-                    <div class="relative w-full max-w-xl">
-                        <input type="search" name="q"
-                            class="w-full h-12 border border-slate-300 rounded-xl pl-4 pr-10 text-sm outline-none
-                               focus:ring-2 focus:ring-emerald-500"
-                            placeholder="Cari Program" value="{{ request('q') }}">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="m21 21-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
+            {{-- Menu Desktop (tetap) --}}
+            <nav class="hidden md:flex items-center gap-6">
+                <a href="{{ route('programs.index') }}" class="text-slate-700 font-medium hover:text-emerald-600">Donasi</a>
+                <a href="{{ route('events.index') }}" class="text-slate-700 font-medium hover:text-emerald-600">Event</a>
+                <a href="{{ route('dana-punia.index') }}" class="text-slate-700 font-medium hover:text-emerald-600">Punia</a>
+
+                @guest
+                    <a href="{{ route('login') }}" class="text-slate-700 font-medium hover:text-emerald-600">Masuk</a>
+                @endguest
+
+                @auth
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="flex items-center gap-2">
+                            <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('images/humans.jpg') }}"
+                                class="h-8 w-8 rounded-full border object-cover">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
-                        </span>
-                    </div>
-                </form>
+                        </button>
 
-                {{-- Menu kanan --}}
-                <nav class="flex items-center gap-6">
-                    <a href="{{ route('programs.index') }}" class="text-slate-700 font-medium hover:text-emerald-600">
-                        Donasi
-                    </a>
-                    <a href="{{ route('events.index') }}"
-                        class="text-slate-700 font-medium hover:text-emerald-600">
-                        Event
-                    </a>
-                    <a href="{{ route('dana-punia.index') }}"
-                        class="text-slate-700 font-medium hover:text-emerald-600">Punia</a>
-
-                    @guest
-                        <a href="{{ route('login') }}" class="text-slate-700 font-medium hover:text-emerald-600">
-                            Masuk
-                        </a>
-                    @endguest
-
-                    {{-- Jika login --}}
-                    @auth
-                        <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open" class="flex items-center gap-2">
-                                <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('images/humans.jpg') }}"
-                                    class="h-8 w-8 rounded-full border object-cover">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-
-                            {{-- Dropdown --}}
-                            <div x-show="open" @click.away="open=false"
-                                class="absolute right-0 mt-3 w-48 bg-white border rounded-xl shadow-lg overflow-hidden z-50">
-                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm hover:bg-slate-100">Profil
-                                    Saya</a>
-                                <a href="{{ route('dashboard.index') }}"
-                                    class="block px-4 py-2 text-sm hover:bg-slate-100">Dashboard</a>
-
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit"
-                                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                        Logout
-                                    </button>
-                                </form>
-                            </div>
+                        <div x-show="open" @click.away="open=false"
+                            class="absolute right-0 mt-3 w-48 bg-white border rounded-xl shadow-lg overflow-hidden z-50">
+                            <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm hover:bg-slate-100">Profil Saya</a>
+                            <a href="{{ route('dashboard.index') }}" class="block px-4 py-2 text-sm hover:bg-slate-100">Dashboard</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                    Logout
+                                </button>
+                            </form>
                         </div>
-                    @endauth
+                    </div>
+                @endauth
 
+                <a href="{{ route('galang.create') }}"
+                    class="inline-flex items-center rounded-full bg-emerald-600 hover:bg-emerald-700
+                        text-white text-sm font-semibold px-5 py-2.5 shadow-md shadow-emerald-500/30">
+                    Galang Dana
+                </a>
+            </nav>
 
-                    <a href="{{ route('galang.create') }}"
-                        class="hidden md:inline-flex items-center rounded-full bg-emerald-600 hover:bg-emerald-700 
-                          text-white text-sm font-semibold px-5 py-2.5 shadow-md shadow-emerald-500/30">
-                        Galang Dana
-                    </a>
-                </nav>
+            {{-- Controls Mobile --}}
+            <div class="md:hidden flex items-center gap-2">
+                {{-- tombol search --}}
+                <button @click="mobileSearch = !mobileSearch; mobileOpen = false"
+                    class="h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center">
+                    <i class="bi bi-search text-slate-700"></i>
+                </button>
+
+                {{-- tombol hamburger --}}
+                <button @click="mobileOpen = !mobileOpen; mobileSearch = false"
+                    class="h-10 w-10 rounded-xl border border-slate-200 flex items-center justify-center">
+                    <i class="bi" :class="mobileOpen ? 'bi-x-lg' : 'bi-list'"></i>
+                </button>
             </div>
-        </header>
+        </div>
+
+        {{-- Mobile Search Bar --}}
+        <div class="md:hidden px-4 sm:px-6 pb-3" x-show="mobileSearch" x-transition>
+            <form action="{{ route('program.search') }}" method="GET">
+                <div class="relative">
+                    <input type="search" name="q"
+                        class="w-full h-11 border border-slate-300 rounded-xl pl-4 pr-10 text-sm outline-none
+                            focus:ring-2 focus:ring-emerald-500"
+                        placeholder="Cari Program" value="{{ request('q') }}">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <i class="bi bi-search"></i>
+                    </span>
+                </div>
+            </form>
+        </div>
+
+        {{-- Mobile Menu Panel --}}
+        <div class="md:hidden border-t bg-white" x-show="mobileOpen" x-transition @click.away="mobileOpen=false">
+            <div class="px-4 sm:px-6 py-4 space-y-2 text-sm">
+
+                <a href="{{ route('programs.index') }}" class="block px-3 py-2 rounded-xl hover:bg-slate-50">Donasi</a>
+                <a href="{{ route('events.index') }}" class="block px-3 py-2 rounded-xl hover:bg-slate-50">Event</a>
+                <a href="{{ route('dana-punia.index') }}" class="block px-3 py-2 rounded-xl hover:bg-slate-50">Punia</a>
+
+                <div class="h-px bg-slate-200 my-2"></div>
+
+                @guest
+                    <a href="{{ route('login') }}" class="block px-3 py-2 rounded-xl hover:bg-slate-50">Masuk</a>
+                @endguest
+
+                @auth
+                    <a href="{{ route('profile') }}" class="block px-3 py-2 rounded-xl hover:bg-slate-50">Profil Saya</a>
+                    <a href="{{ route('dashboard.index') }}" class="block px-3 py-2 rounded-xl hover:bg-slate-50">Dashboard</a>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-3 py-2 rounded-xl text-red-600 hover:bg-red-50">
+                            Logout
+                        </button>
+                    </form>
+                @endauth
+
+                <a href="{{ route('galang.create') }}"
+                    class="mt-2 w-full inline-flex justify-center items-center rounded-xl bg-emerald-600 hover:bg-emerald-700
+                        text-white font-semibold px-4 py-3 shadow-md shadow-emerald-500/25">
+                    Galang Dana
+                </a>
+            </div>
+        </div>
+    </header>
     @endunless
+
 
     {{-- MAIN --}}
     <main>

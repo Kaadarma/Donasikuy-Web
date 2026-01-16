@@ -194,37 +194,57 @@ class ProgramController extends Controller
 
     public function search(Request $request)
     {
-
         $q = trim((string) ($request->q ?? ''));
 
         if ($q === '') {
             return redirect()->route('landing');
-
         }
 
-        $keyword = strtolower($q);
+        $keyword = mb_strtolower($q);
 
-        $allRaw = $this->seed();
-        $all = array_map(fn ($p) => $this->decorateProgram($p), $allRaw);
+        $all = $this->allPrograms();
 
+        // Filter + scoring (relevansi)
         $filtered = array_filter($all, function ($p) use ($keyword) {
-            $title = strtolower($p['title'] ?? '');
-            $category = strtolower($p['category'] ?? '');
-            $slug = strtolower($p['slug'] ?? '');
+            $title = mb_strtolower($p['title'] ?? '');
+            $category = mb_strtolower($p['category'] ?? '');
+            $slug = mb_strtolower($p['slug'] ?? '');
+            $short = mb_strtolower($p['short_description'] ?? '');
+            $desc = mb_strtolower($p['description'] ?? '');
 
             return str_contains($title, $keyword)
                 || str_contains($category, $keyword)
-                || str_contains($slug, $keyword);
+                || str_contains($slug, $keyword)
+                || str_contains($short, $keyword)
+                || str_contains($desc, $keyword);
         });
 
-        $collection = collect($filtered);
+        // Sort by relevance (title > category > slug > description)
+        $collection = collect($filtered)->map(function ($p) use ($keyword) {
+            $title = mb_strtolower($p['title'] ?? '');
+            $category = mb_strtolower($p['category'] ?? '');
+            $slug = mb_strtolower($p['slug'] ?? '');
+            $short = mb_strtolower($p['short_description'] ?? '');
+            $desc = mb_strtolower($p['description'] ?? '');
+
+            $score = 0;
+            if (str_contains($title, $keyword)) $score += 100;
+            if (str_contains($category, $keyword)) $score += 60;
+            if (str_contains($slug, $keyword)) $score += 40;
+            if (str_contains($short, $keyword)) $score += 25;
+            if (str_contains($desc, $keyword)) $score += 10;
+
+            // bonus kalau keyword ada di awal judul
+            if ($keyword !== '' && str_starts_with($title, $keyword)) $score += 25;
+
+            $p['_score'] = $score;
+            return $p;
+        })->sortByDesc('_score')->values();
 
         $perPage = 9;
         $page = (int) $request->input('page', 1);
 
-        $items = $collection
-            ->slice(($page - 1) * $perPage, $perPage)
-            ->values();
+        $items = $collection->slice(($page - 1) * $perPage, $perPage)->values();
 
         $programs = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,
@@ -239,6 +259,7 @@ class ProgramController extends Controller
             'keyword' => $q,
         ]);
     }
+
 
     public function allPrograms(): array
     {

@@ -13,7 +13,7 @@
             </p>
         </div>
 
-        <a href="{{ route('dashboard.events.create') }}"
+        <a href="#"
            class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition">
             + Buat Event
         </a>
